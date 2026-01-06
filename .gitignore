@@ -1,0 +1,12 @@
+# Python miljø
+shaker-venv/
+__pycache__/
+*.pyc
+
+# Build filer
+dist/
+build/
+*.egg-info/
+
+# Bruger-data
+config.json

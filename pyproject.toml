@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gt7-shaker"
+version = "1.27"
+authors = [{name = "Soeren Helskov"}]
+description = "GT7 Telemetry to Bass Shaker converter for Linux"
+readme = "README.md"
+license = {text = "GPL-3.0"}
+requires-python = ">=3.8"
+dependencies = [
+    "flask",
+    "pyaudio",
+    "numpy",
+    "pycryptodome"
+    ]
+
+[project.scripts]
+gt-shaker = "gt_shaker.web_app:main"

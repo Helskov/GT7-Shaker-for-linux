@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GT7 Shaker for linux v1.27</title>
+
+<style>
+/* --- COLOR PALETTE AND CSS VARIABLES --- */
+:root {
+    --bg: #121212;
+    --panel: #1e1e1e;
+    --text: #e0e0e0;
+    --accent: #007acc;
+    --gas: #4caf50;
+    --brake: #f44336;
+    --shift: #00ff00; /* Bright Green for Shift */
+    }
+
+/* --- GLOBAL STYLES --- */
+body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; overflow: hidden; }
+.swipe-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; width: 100vw; height: 100vh; scroll-behavior: smooth; }
+.page { flex: 0 0 100vw; width: 100vw; height: 100vh; scroll-snap-align: start; padding: 15px; box-sizing: border-box; overflow-y: auto; padding-bottom: 80px; }
+
+.help-btn {
+    background: #444;
+    color: var(--text);
+    text-decoration: none;
+    padding: 0 12px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    border: 1px solid #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 38px; /* Matcher højden på input feltet */
+    transition: background 0.2s, border-color 0.2s;
+    white-space: nowrap;
+    }
+
+.help-btn:hover {
+    background: #555;
+    border-color: var(--accent);
+    }
+
+.status-box.warning {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ff9800;
+    border-color: #ff9800;
+    box-shadow: 0 0 10px rgba(255, 152, 0, 0.2);
+    }
+
+body.light-mode {
+    --bg: #f5f5f5; --panel: #ffffff; --text: #222222;
+    }
+body.light-mode .card { border-color: #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+body.light-mode .race-box-large { background: #eee; border-color: #ccc; }
+
+/* --- CARD AND UI COMPONENTS --- */
+.card { background: var(--panel); border-radius: 12px; padding: 15px; margin-bottom: 12px; border: 1px solid #333; }
+h2 { margin: 0 0 10px 0; font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
+label { display: block; margin-bottom: 5px; font-size: 0.9rem; }
+.val-label { font-family: monospace; color: var(--accent); font-weight: bold; font-size: 0.85rem; }
+input[type=range] { width: 100%; margin: 10px 0; accent-color: var(--accent); }
+.help-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: #666; margin-top: -2px; margin-bottom: 5px; }
+.bal-labels { display: flex; justify-content: space-between; font-size: 0.7rem; margin-top: 5px; }
+
+/* --- NEW RACE DASHBOARD STYLES (SIDE 1) --- */
+.rpm-race-bar {
+    height: 70px; background: #333; color: white; display: flex; justify-content: center; align-items: center;
+    font-family: monospace; font-size: 2.5rem; font-weight: bold; border-radius: 12px; border: 2px solid #444;
+    margin-bottom: 15px; transition: background 0.1s, color 0.1s, border-color 0.1s;
+    }
+/* Shift Light State (Green) */
+.rpm-race-bar.shift { background: var(--shift); color: #000; border-color: var(--shift); box-shadow: 0 0 20px var(--shift); }
+/* Rev Limiter State (Blinking Red) */
+.rpm-race-bar.limit { animation: blinkRed 0.15s infinite; color: white; border-color: var(--brake); }
+@keyframes blinkRed { 0%, 100% { background: var(--brake); } 50% { background: #400000; } }
+
+.race-grid-large { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+.race-box-large { background: var(--panel); height: 120px; border-radius: 12px; border: 1px solid #333; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.race-val-huge { font-size: 4rem; font-weight: bold; font-family: sans-serif; }
+.race-label { font-size: 0.9rem; color: #888; text-transform: uppercase; margin-top: 5px; }
+
+.tire-vertical-box { background: #151515; border-radius: 8px; padding: 15px; border: 1px solid #333; text-align: center; }
+.tire-temp-large { font-size: 1.8rem; font-weight: bold; font-family: monospace; }
+
+/* --- EXISTING STYLES (SIDE 2 & 3) --- */
+select { background: #333; color: white; border: 1px solid #444; padding: 8px; width: 100%; border-radius: 6px; margin-top: 5px; outline: none; }
+.btn { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
+.btn.stop { background: #d32f2f; }
+input[type=number] { width: 100%; background: #333; border: 1px solid #444; color: white; padding: 8px; border-radius: 6px; box-sizing: border-box; }
+canvas { width: 100%; height: 100px; background: #000; border-radius: 8px; margin-top: 10px; }
+.telemetry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+.tele-box { background: #000; padding: 10px; border-radius: 8px; text-align: center; }
+.tele-label { font-size: 0.7rem; color: #666; text-transform: uppercase; }
+.tele-val { font-size: 1.5rem; font-weight: bold; margin: 5px 0; }
+.bar-bg { width: 100%; height: 6px; background: #333; border-radius: 3px; overflow: hidden; margin-top: 5px; }
+.bar-fill { height: 100%; width: 0%; background: var(--accent); transition: 0.1s; }
+.switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .4s; border-radius: 20px; }
+.slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--accent); }
+input:checked + .slider:before { transform: translateX(20px); }
+.status-box { font-size: 0.65rem; padding: 8px 12px; border-radius: 6px; text-transform: uppercase; font-weight: bold; white-space: nowrap; transition: 0.3s; min-width: 90px; text-align: center; border: 1px solid transparent; }
+.status-box.valid { background: rgba(76, 175, 80, 0.2); color: #4caf50; border-color: #4caf50; box-shadow: 0 0 10px rgba(76, 175, 80, 0.2); }
+.status-box.invalid { background: rgba(244, 67, 54, 0.1); color: #f44336; border-color: #f44336; }
+
+/* --- NAVIGATION DOTS (3 PAGES) --- */
+.nav-dots { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 8px; pointer-events: none; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #444; transition: 0.3s; }
+.dot.active { background: var(--accent); transform: scale(1.3); }
+</style>
+</head>
+
+<body>
+
+<div class="swipe-container" id="scroller">
+
+    <div class="page" style="background: #0a0a0a;">
+    <div id="race_rpm_bar" class="rpm-race-bar">
+    <span id="race_rpm_val">0</span> RPM
+    </div>
+
+    <div class="race-grid-large">
+    <div class="race-box-large">
+    <div class="race-val-huge" id="race_gear_disp">-</div>
+    <div class="race-label">GEAR</div>
+    </div>
+    <div class="race-box-large">
+    <div class="race-val-huge" id="race_speed_disp">0</div>
+    <div class="race-label" id="race_speed_unit">km/h</div>
+    </div>
+    </div>
+
+    <div class="race-grid-large" style="grid-template-columns: 1fr 1fr 1fr; gap: 10px; height: 80px; margin-bottom: 15px;">
+    <div class="race-box-large" style="height: 100%;">
+    <div class="race-val-huge" id="race_pos_disp" style="font-size: 2rem;">-</div>
+    <div class="race-label">POS</div>
+    </div>
+    <div class="race-box-large" style="height: 100%;">
+    <div id="race_last_lap" style="font-family: monospace; font-size: 1.1rem; font-weight: bold;">--:--.---</div>
+    <div class="race-label">LAST</div>
+    </div>
+    <div class="race-box-large" style="height: 100%;">
+    <div id="race_best_lap" style="font-family: monospace; font-size: 1.1rem; font-weight: bold; color: var(--shift);">--:--.---</div>
+    <div class="race-label">BEST</div>
+    </div>
+    </div>
+
+    <div class="card">
+    <h2 style="margin-bottom: 15px;">Tire Status</h2>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+    {% for id in ['FL', 'FR', 'RL', 'RR'] %}
+    <div class="tire-vertical-box">
+    <div style="font-size: 0.8rem; color: #666; margin-bottom: 5px;">{{ id }}</div>
+    <div id="race_temp_{{ id }}" class="tire-temp-large" style="color: #ffffff;">--</div>
+    </div>
+    {% endfor %}
+    </div>
+    </div>
+    <p style="text-align: center; color: #444; font-size: 0.7rem; margin-top: 20px;">Swipe left for controls & settings</p>
+    </div>
+
+<div class="page">
+<div class="card">
+<h2>Connection</h2>
+<div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+<a href="/manual" target="_blank" class="help-btn">HELP</a>
+<input type="text" id="ps5_ip" value="{{ config.ps5_ip }}" placeholder="PS5 IP Address" style="flex:1; padding:10px; background:#333; border:1px solid #444; color:white; border-radius:6px; font-family:monospace;">
+<div id="status_indicator" class="status-box invalid">Offline</div>
+</div>
+<button id="toggleBtn" class="btn" onclick="toggleEngine()">START ENGINE</button>
+</div>
+
+        <div class="telemetry-grid">
+        <div class="tele-box"><div class="tele-label">Gear</div><div class="tele-val" id="gear_disp">-</div></div>
+        <div class="tele-box"><div class="tele-label">Speed</div><div class="tele-val"><span id="speed_disp">0</span><small id="speed_unit" style="font-size:0.8rem;color:#666;margin-left:4px;">km/h</small></div></div>
+        </div>
+
+        <div class="card">
+        <h2>Tire temperature</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 5px;">
+        {% for id in ['FL', 'FR', 'RL', 'RR'] %}
+        <div id="tire_{{ id }}" style="display: flex; align-items: center; background: #151515; border-radius: 8px; padding: 10px; border: 1px solid #333; gap: 10px; justify-content: center;">
+        <div style="text-align: center;">
+        <div style="font-size: 0.6rem; color: #666; margin-bottom: 2px;">{{ id }}</div>
+        <div class="val-label" id="temp_{{ id }}" style="font-size: 1.1rem; color: #ffffff;">--</div>
+        </div>
+        </div>
+        {% endfor %}
+        </div>
+        </div>
+
+        <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+        <span id="rpm_val" style="font-family:monospace;">0 RPM</span>
+        </div>
+        <div class="bar-bg">
+        <div id="rpm_bar" class="bar-fill"></div>
+        </div>
+        <canvas id="pedalCanvas"></canvas>
+        <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-top:5px; color:#888;">
+        <span style="color:var(--gas)">● Throttle</span>
+        <span style="color:var(--brake)">● Brake</span>
+        </div>
+        </div>
+
+        <div class="card">
+        <h2>Shaker Signal Analysis</h2>
+        <canvas id="tuneCanvas"></canvas>
+        <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-top:5px; color:#888;">
+        <span><b style="color:#f44336">●</b> Road</span>
+        <span><b style="color:#007acc">●</b> Impact</span>
+        <span><b style="color:#ffeb3b">●</b> Traction</span>
+        <span><b style="color:#9c27b0">●</b> Sim-Road</span>
+        </div>
+        </div>
+        </div> <div class="page"> <div class="card">
+        <h2>General Settings</h2>
+    <div style="display:flex; justify-content:space-between;"><label>Master Volume</label><span id="master_vol_disp" class="val-label">{{ (config.master_volume|float * 100)|int }}%</span></div>
+    <input type="range" id="master_vol" min="0" max="1" step="0.01" value="{{ config.master_volume }}" oninput="document.getElementById('master_vol_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:10px; border-top: 1px solid #333;">
+    <label>Keep Screen Awake</label>
+    <label class="switch">
+    <input type="checkbox" id="wake_lock_toggle" onchange="toggleWakeLock()">
+    <span class="slider"></span>
+    </label>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+    <label>Light Mode UI</label>
+    <label class="switch">
+    <input type="checkbox" id="theme_toggle" onchange="toggleTheme()">
+    <span class="slider"></span>
+    </label>
+    </div>
+
+    <label style="margin-top:10px;">Measurement Units</label>
+    <select id="units" onchange="sendUpdate()">
+    <option value="metric" {% if config.units == 'metric' %}selected{% endif %}>Metric (km/h / °C)</option>
+    <option value="imperial" {% if config.units == 'imperial' %}selected{% endif %}>Imperial (mph / °F)</option>
+    </select>
+
+    <label style="margin-top:10px;">Shaker Mode</label>
+    <select id="shaker_mode" onchange="sendUpdate()">
+    <option value="2" {% if config.shaker_mode == 2 %}selected{% endif %}>2 Shakers (Front/Rear Stereo)</option>
+    <option value="1" {% if config.shaker_mode == 1 %}selected{% endif %}>1 Shaker (Mono Mixdown)</option>
+    </select>
+
+    <div style="display: flex; gap: 10px; margin-top: 10px;">
+    <div style="flex: 3;">
+    <label>Audio Interface</label>
+    <select id="audio_device" onchange="sendUpdate()">
+    {% for dev in devices %}
+    <option value="{{ dev.id }}" {% if config.audio.device_index == dev.id %}selected{% endif %}>{{ dev.name }}</option>
+    {% endfor %}
+    </select>
+    </div>
+    <div style="flex: 2;">
+    <label>Sample Rate</label>
+    <select id="sample_rate" onchange="sendUpdate()">
+    <option value="44100" {% if config.audio.sample_rate == 44100 %}selected{% endif %}>44.1 kHz</option>
+    <option value="48000" {% if config.audio.sample_rate == 48000 %}selected{% endif %}>48.0 kHz</option>
+    </select>
+    </div>
+    </div>
+
+    <div id="testArea" style="margin-top:20px; border-top:1px solid #333; padding-top:15px;">
+    <label style="color:#888; font-size:0.75rem; text-transform:uppercase;">Hardware Output Test</label>
+    <div style="display:flex; gap:10px; margin-top:8px;">
+    <button id="test_rear_btn" class="btn" style="background:#333; flex:1;" onclick="testShaker(0)">TEST REAR</button>
+    <button id="test_front_btn" class="btn" style="background:#333; flex:1;" onclick="testShaker(1)">TEST FRONT</button>
+    </div>
+    <p id="test_hint" style="color:#666; font-size:0.65rem; margin-top:10px; text-align:center;">Only available when engine is off</p>
+    </div>
+    </div>
+
+    <div class="card">
+    <h2>Engine RPM <span><label class="switch"><input type="checkbox" id="rpm_enabled" {% if config.effects.rpm.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></span></h2>
+    <div style="display:flex; justify-content:space-between;"><label>Volume</label><span id="rpm_val_disp" class="val-label">{{ (config.effects.rpm.volume|float * 100)|int }}%</span></div>
+    <input type="range" id="rpm_vol" min="0" max="1.0" step="0.01" value="{{ config.effects.rpm.volume }}" oninput="document.getElementById('rpm_val_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
+
+    <label>Axle Balance (Rear/Front)</label>
+    <div class="bal-labels"><span>Rear (Left)</span><span>Front (Right)</span></div>
+    <input type="range" id="rpm_bal" min="0" max="1" step="0.05" value="{{ config.effects.rpm.balance }}" onchange="sendUpdate()">
+
+    <label style="margin-top:10px;">Motor Profile</label>
+    <select id="rpm_profile" onchange="sendUpdate()">
+    <option value="sine" {% if config.effects.rpm.profile == 'sine' %}selected{% endif %}>Sine Wave</option>
+    <option value="v8" {% if config.effects.rpm.profile == 'v8' %}selected{% endif %}>V8 (Ignition Pulses)</option>
+    <option value="boxer" {% if config.effects.rpm.profile == 'boxer' %}selected{% endif %}>Boxer (Rhythm)</option>
+    </select>
+
+    <div style="display:flex; gap:10px; margin-top:15px;">
+    <div style="flex:1"><label>Min Hz</label><input type="number" id="rpm_min" value="{{ config.effects.rpm.min_freq }}" onchange="sendUpdate()"></div>
+    <div style="flex:1"><label>Max Hz</label><input type="number" id="rpm_max" value="{{ config.effects.rpm.max_freq }}" onchange="sendUpdate()"></div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; margin-top:15px; border-top: 1px solid #333; padding-top:10px;">
+    <label>Pit Boost (Vol)</label>
+    <span id="rpm_pit_boost_val" class="val-label">{{ (config.effects.rpm.pit_boost|float * 100)|int }}%</span>
+    </div>
+    <input type="range" id="rpm_pit_boost" min="0" max="1.0" step="0.01" value="{{ config.effects.rpm.pit_boost or 0.8 }}" oninput="document.getElementById('rpm_pit_boost_val').innerText = Math.round(this.value*100)+'%'" onchange="sendUpdate()">
+
+    <div class="card">
+    <h2>Suspension <span><label class="switch"><input type="checkbox" id="susp_enabled" {% if config.effects.suspension.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></span></h2>
+    <div style="display:flex; justify-content:space-between;"><label>Road Vol (Red)</label><span id="road_vol_disp" class="val-label">{{ (config.effects.suspension.road_volume|float * 100)|int }}%</span></div>
+    <input type="range" id="susp_road_vol" min="0" max="1.0" step="0.01" value="{{ config.effects.suspension.road_volume }}" oninput="document.getElementById('road_vol_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
+
+    <div style="display:flex; justify-content:space-between;"><label>Impact Vol (Blue)</label><span id="impact_vol_disp" class="val-label">{{ (config.effects.suspension.impact_volume|float * 100)|int }}%</span></div>
+    <input type="range" id="susp_impact_vol" min="0" max="1.0" step="0.01" value="{{ config.effects.suspension.impact_volume }}" oninput="document.getElementById('impact_vol_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
+
+    <div style="border-top: 1px solid #333; margin-top: 10px; padding-top: 10px;">
+    <div style="display:flex; justify-content:space-between;"><label style="color:#f44336">Road Sensitivity (Red)</label><span id="thresh_val" class="val-label">{{ config.effects.suspension.threshold }}</span></div>
+    <div class="help-labels"><span>Max Detail</span><span>Noisy</span></div>
+    <input type="range" id="susp_thresh" min="0.0" max="1.0" step="0.01" value="{{ config.effects.suspension.threshold }}" oninput="document.getElementById('thresh_val').innerText=this.value" onchange="sendUpdate()">
+
+    <div style="margin-top:15px; display:flex; justify-content:space-between;"><label style="color:#007acc">Impact Sensitivity (Blue)</label><span id="impact_thresh_val" class="val-label">{{ config.effects.suspension.impact_threshold }}</span></div>
+    <div class="help-labels"><span>Sensitive</span><span>Hard</span></div>
+    <input type="range" id="susp_impact_thresh" min="0.5" max="40.0" step="0.1" value="{{ config.effects.suspension.impact_threshold }}" oninput="document.getElementById('impact_thresh_val').innerText=this.value" onchange="sendUpdate()">
+    </div>
+
+    <label style="margin-top:15px;">Axle Balance (Rear/Front)</label>
+    <div class="bal-labels"><span>Rear (Left)</span><span>Front (Right)</span></div>
+    <input type="range" id="susp_bal" min="0" max="1" step="0.05" value="{{ config.effects.suspension.balance }}" onchange="sendUpdate()">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;"><label>Priority Suspension over Engine Sound</label><label class="switch"><input type="checkbox" id="susp_priority" {% if config.effects.suspension.priority %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></div>
+    </div>
+
+        <div class="card">
+        <h2>Traction Loss effect <span><label class="switch"><input type="checkbox" id="traction_enabled" {% if config.effects.traction.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></span></h2>
+        <div style="display:flex; justify-content:space-between;"><label>Volume</label><span id="traction_vol_disp" class="val-label">{{ (config.effects.traction.volume|float * 100)|int }}%</span></div>
+        <input type="range" id="traction_vol" min="0" max="1.0" step="0.01" value="{{ config.effects.traction.volume }}" oninput="document.getElementById('traction_vol_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
+
+        <div style="display:flex; justify-content:space-between;"><label>Slip Threshold (Deadzone)</label><span id="traction_thresh_val" class="val-label">{{ config.effects.traction.threshold }}</span></div>
+        <div class="help-labels"><span>0.01 (High Sensitivity)</span><span>0.20 (Safe)</span></div>
+        <input type="range" id="traction_thresh" min="0.01" max="0.20" step="0.01" value="{{ config.effects.traction.threshold }}" oninput="document.getElementById('traction_thresh_val').innerText=this.value" onchange="sendUpdate()">
+
+        <div style="margin-top:10px; display:flex; justify-content:space-between;"><label>Slip Sensitivity (Ramp-up)</label><span id="traction_sens_val" class="val-label">{{ config.effects.traction.sensitivity }}</span></div>
+        <div class="help-labels"><span>0.05 (Aggressive)</span><span>0.50 (Smooth)</span></div>
+        <input type="range" id="traction_sens" min="0.05" max="0.50" step="0.01" value="{{ config.effects.traction.sensitivity }}" oninput="document.getElementById('traction_sens_val').innerText=this.value" onchange="sendUpdate()">
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;"><label>Autocalibration</label><label class="switch"><input type="checkbox" id="traction_calib" {% if config.effects.traction.use_autocalib %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></div>
+
+        <div style="margin-top:15px; padding-top:10px; border-top:1px solid #333;">
+        <div style="display:flex; justify-content:space-between;"><label>Front Frequency (Lockup)</label><span id="traction_front_freq_disp" class="val-label">{{ config.effects.traction.front_freq }} Hz</span></div>
+        <input type="range" id="traction_front_freq" min="30" max="80" step="1" value="{{ config.effects.traction.front_freq }}" oninput="document.getElementById('traction_front_freq_disp').innerText=this.value+' Hz'" onchange="sendUpdate()">
+
+        <div style="display:flex; justify-content:space-between; margin-top:10px;"><label>Rear Frequency (Slip)</label><span id="traction_rear_freq_disp" class="val-label">{{ config.effects.traction.rear_freq }} Hz</span></div>
+        <input type="range" id="traction_rear_freq" min="25" max="70" step="1" value="{{ config.effects.traction.rear_freq }}" oninput="document.getElementById('traction_rear_freq_disp').innerText=this.value+' Hz'" onchange="sendUpdate()">
+        </div>
+        </div>
+
+    <div class="card">
+    <h2>Gear Shifts <span><label class="switch"><input type="checkbox" id="gear_enabled" {% if config.effects.gear_shift.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></span></h2>
+    <div style="display:flex; justify-content:space-between;"><label>Volume</label><span id="gear_vol_disp" class="val-label">{{ (config.effects.gear_shift.volume|float * 100)|int }}%</span></div>
+    <input type="range" id="gear_vol" min="0" max="1.0" step="0.01" value="{{ config.effects.gear_shift.volume }}" oninput="document.getElementById('gear_vol_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
+    <label>Axle Balance (Rear/Front)</label>
+    <div class="bal-labels"><span>Rear (Left)</span><span>Front (Right)</span></div>
+    <input type="range" id="gear_bal" min="0" max="1" step="0.05" value="{{ config.effects.gear_shift.balance }}" onchange="sendUpdate()">
+    </div>
+
+    <div class="card">
+    <h2>Simulated Road Texture <span><label class="switch"><input type="checkbox" id="road_sim_enabled" {% if config.effects.sim_road.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></span></h2>
+
+    <div style="display:flex; justify-content:space-between;"><label>Surface Texture (Vol)</label><span id="road_texture_vol_disp" class="val-label">{{ (config.effects.sim_road.texture_volume|float * 100)|int if config.effects.sim_road.texture_volume is defined else 50 }}%</span></div>
+    <input type="range" id="road_texture_vol" min="0" max="1.0" step="0.01" value="{{ config.effects.sim_road.texture_volume if config.effects.sim_road.texture_volume is defined else 0.5 }}" oninput="document.getElementById('road_texture_vol_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
+
+    <div style="display:flex; justify-content:space-between;"><label>Surface Frequency</label><span id="road_texture_freq_disp" class="val-label">{{ config.effects.sim_road.texture_freq if config.effects.sim_road.texture_freq is defined else 30 }} Hz</span></div>
+    <input type="range" id="road_texture_freq" min="20" max="60" step="1" value="{{ config.effects.sim_road.texture_freq if config.effects.sim_road.texture_freq is defined else 30 }}" oninput="document.getElementById('road_texture_freq_disp').innerText=this.value+' Hz'" onchange="sendUpdate()">
+
+    <div style="display:flex; justify-content:space-between;"><label>Road Effects (Vol)</label><span id="road_sim_vol_disp" class="val-label">{{ (config.effects.sim_road.volume|float * 100)|int }}%</span></div>
+    <input type="range" id="road_sim_vol" min="0" max="1.0" step="0.01" value="{{ config.effects.sim_road.volume }}" oninput="document.getElementById('road_sim_vol_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
+
+    <div style="display:flex; justify-content:space-between;"><label>Surface Roughness</label><span id="road_rough_val" class="val-label">{{ config.effects.sim_road.roughness }}</span></div>
+    <div class="help-labels"><span>Silk Smooth</span><span>Bumpy / Cobblestone</span></div>
+    <input type="range" id="road_sim_rough" min="0.0" max="1.0" step="0.01" value="{{ config.effects.sim_road.roughness }}" oninput="document.getElementById('road_rough_val').innerText=this.value" onchange="sendUpdate()">
+    <p style="color:#666; font-size:0.65rem; margin-top:10px; text-align:center;">Speed-adaptive axle delay (2.75m wheelbase logic applied).</p>
+    </div>
+    </div>
+    </div>
+
+    <div class="nav-dots">
+    <div id="dot1" class="dot active"></div>
+    <div id="dot2" class="dot"></div>
+    <div id="dot3" class="dot"></div>
+    </div>
+
+    <script>
+    /* --- CONSTANTS AND STATE --- */
+    let isRunning = false;
+    let wakeLock = null;
+    const tuneCanvas = document.getElementById('tuneCanvas'); const tuneCtx = tuneCanvas.getContext('2d');
+    const pedalCanvas = document.getElementById('pedalCanvas'); const pedalCtx = pedalCanvas.getContext('2d');
+    const statusIndicator = document.getElementById('status_indicator');
+    const tuneHist = []; const pedalHist = []; const maxPts = 100;
+
+    /* --- Toogle theme --- */
+    function toggleTheme() {
+        const isLight = document.getElementById('theme_toggle').checked;
+        document.body.classList.toggle('light-mode', isLight);
+        sendUpdate(); // Gemmer valget i din config.json
+        }
+
+    /* --- GRAPH DRAWING ENGINE --- */
+    function draw(ctx, canvas, hist, series, maxVal) {
+        if(!canvas || !ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Baggrunds-gitre
+    ctx.strokeStyle = '#222'; ctx.beginPath();
+    for(let i=1; i<4; i++){ let y = canvas.height - (canvas.height/4)*i; ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
+    ctx.stroke();
+
+    // Tegn hver serie i arrayet
+    series.forEach(set => {
+        ctx.strokeStyle = set.c; ctx.lineWidth = 1.5; ctx.beginPath();
+        hist.forEach((p, i) => {
+            let x = (i / (maxPts-1)) * canvas.width;
+            let y = canvas.height - ((p[set.k] || 0) / maxVal) * canvas.height;
+            if(i===0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+        ctx.stroke();
+        });
+        }
+
+        /* --- SCREEN WAKE LOCK LOGIC --- */
+        async function toggleWakeLock() {
+            const isEnabled = document.getElementById('wake_lock_toggle').checked;
+            if (isEnabled) {
+                try { if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); } } catch (err) { document.getElementById('wake_lock_toggle').checked = false; }
+                } else if (wakeLock) { await wakeLock.release(); wakeLock = null; }
+            }
+
+            /* --- ENGINE START/STOP --- */
+            async function toggleEngine() {
+                const ps5_ip = document.getElementById('ps5_ip').value;
+                const action = isRunning ? 'stop' : 'start';
+                try { await fetch('/api/toggle', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action: action, ip: ps5_ip}) }); } catch(err) { console.error("Toggle failed:", err); }
+                }
+
+            /* --- HARDWARE TEST SIGNAL --- */
+            async function testShaker(side) { if(isRunning) return; await fetch('/api/test', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({side:side})}); }
+
+        /* --- REAL-TIME SETTINGS SYNC --- */
+        async function sendUpdate() {
+            try {
+                const payload = {
+                    ps5_ip: document.getElementById('ps5_ip').value,
+                    master_volume: document.getElementById('master_vol').value,
+                    units: document.getElementById('units').value,
+                    shaker_mode: parseInt(document.getElementById('shaker_mode').value),
+                    audio: {
+                        device_index: parseInt(document.getElementById('audio_device').value),
+                        sample_rate: parseInt(document.getElementById('sample_rate').value)
+                        },
+                    rpm: {
+                        enabled: document.getElementById('rpm_enabled').checked,
+                        volume: document.getElementById('rpm_vol').value,
+                        balance: document.getElementById('rpm_bal').value,
+                        profile: document.getElementById('rpm_profile').value,
+                        min_freq: document.getElementById('rpm_min').value,
+                        max_freq: document.getElementById('rpm_max').value,
+                        pit_boost: document.getElementById('rpm_pit_boost').value
+                        },
+                    suspension: {
+                        enabled: document.getElementById('susp_enabled').checked,
+                        road_volume: document.getElementById('susp_road_vol').value,
+                        impact_volume: document.getElementById('susp_impact_vol').value,
+                        threshold: document.getElementById('susp_thresh').value,
+                        impact_threshold: document.getElementById('susp_impact_thresh').value,
+                        balance: document.getElementById('susp_bal').value,
+                        priority: document.getElementById('susp_priority').checked
+                        },
+                    traction: {
+                        enabled: document.getElementById('traction_enabled').checked,
+                        volume: document.getElementById('traction_vol').value,
+                        threshold: document.getElementById('traction_thresh').value,
+                        sensitivity: document.getElementById('traction_sens').value,
+                        use_autocalib: document.getElementById('traction_calib').checked,
+                        front_freq: document.getElementById('traction_front_freq').value,
+                        rear_freq: document.getElementById('traction_rear_freq').value
+                        },
+                    gear_shift: {
+                        enabled: document.getElementById('gear_enabled').checked,
+                        volume: document.getElementById('gear_vol').value,
+                        balance: document.getElementById('gear_bal').value
+                        },
+                    sim_road: {
+                        enabled: document.getElementById('road_sim_enabled').checked,
+                        texture_volume: document.getElementById('road_texture_vol').value,
+                        texture_freq: document.getElementById('road_texture_freq').value,
+                        volume: document.getElementById('road_sim_vol').value,
+                        roughness: document.getElementById('road_sim_rough').value
+                        }
+                    };
+                    await fetch('/api/update', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+                    } catch (err) {}
+                    }
+
+                    /* --- TELEMETRY POLLING LOOP (10Hz) --- */
+                    setInterval(async () => {
+                        try {
+                            const res = await fetch('/api/telemetry'); const d = await res.json();
+
+                            // Global Sync & UI Locking
+                            isRunning = d.active;
+                            const btn = document.getElementById('toggleBtn');
+                            btn.innerText = isRunning ? "STOP ENGINE" : "START ENGINE";
+                            btn.classList.toggle('stop', isRunning);
+                            const tRear = document.getElementById('test_rear_btn'); const tFront = document.getElementById('test_front_btn'); const tHint = document.getElementById('test_hint');
+                            if (isRunning) { tRear.disabled = true; tFront.disabled = true; tRear.style.opacity = "0.4"; tFront.style.opacity = "0.4"; tHint.style.color = "#f44336"; }
+                            else { tRear.disabled = false; tFront.disabled = false; tRear.style.opacity = "1"; tFront.style.opacity = "1"; tHint.style.color = "#666"; }
+
+                            if(d.active) {
+                                // Hvis motoren kører, tjekker vi om der rent faktisk kommer data (is_live)
+                                if (d.is_live) {
+                                    statusIndicator.innerText = "Online (Live)";
+                                    statusIndicator.className = "status-box valid"; // GRØN
+                                    } else {
+                                        statusIndicator.innerText = "Standby (No Data)";
+                                        statusIndicator.className = "status-box warning"; // ORANGE/GUL
+                                        }
+
+                                // Units & Conversions
+                                let speed = d.speed; let unitText = "km/h"; let tUnit = "°C";
+                                if (d.units === "imperial") { speed = speed * 0.621371; unitText = "mph"; tUnit = "°F"; }
+
+                                // --- UPDATE RACE DASH (Page 1) ---
+                                const raceRpmBar = document.getElementById('race_rpm_bar');
+                                document.getElementById('race_rpm_val').innerText = Math.round(d.rpm);
+                                document.getElementById('race_gear_disp').innerText = d.gear==0?"R":d.gear||"N";
+                                document.getElementById('race_speed_disp').innerText = Math.round(speed);
+                                document.getElementById('race_speed_unit').innerText = unitText;
+                                document.getElementById('race_pos_disp').innerText = d.position || "-";
+                                document.getElementById('race_last_lap').innerText = d.last_lap || "--:--.---";
+                                document.getElementById('race_best_lap').innerText = d.best_lap || "--:--.---";
+
+                                // Shift Light Logic for Race Dash
+                                if (d.rev_limiter) {
+                                    raceRpmBar.className = "rpm-race-bar limit"; // Blinking Red
+                                    } else if (d.shift_indicator) {
+                                        raceRpmBar.className = "rpm-race-bar shift"; // Solid Green
+                                        } else {
+                                            raceRpmBar.className = "rpm-race-bar"; // Normal styling
+                                            }
+
+                                        // --- UPDATE MAIN DASH (Page 2) ---
+                                        document.getElementById('gear_disp').innerText = d.gear==0?"R":d.gear||"N";
+                                        document.getElementById('speed_disp').innerText = Math.round(speed);
+                                        document.getElementById('speed_unit').innerText = unitText;
+
+                                        const mainRpmBar = document.getElementById('rpm_bar');
+                                        mainRpmBar.style.width = (d.rpm/d.max_rpm*100)+"%";
+                                        // Main Dash RPM bar color sync
+                                        if (d.rev_limiter) mainRpmBar.style.background = "var(--brake)";
+                                        else if (d.shift_indicator) mainRpmBar.style.background = "var(--shift)";
+                                        else mainRpmBar.style.background = "var(--accent)";
+
+                                        document.getElementById('rpm_val').innerText = Math.round(d.rpm)+" RPM";
+
+                                        // Update Tires (Both Dashboards)
+                                        if(d.tires) {
+                                            ['FL', 'FR', 'RL', 'RR'].forEach((id, i) => {
+                                                const tire = d.tires[i];
+                                                let tempVal = tire.temp;
+                                                if (d.units === "imperial" && tempVal > 0) tempVal = (tempVal * 1.8) + 32;
+                                                const tempStr = tempVal > 0 ? Math.round(tempVal) + tUnit : "--";
+
+                                                // Update Main Dash
+                                                document.getElementById(`temp_${id}`).innerText = tempStr;
+                                                document.getElementById(`temp_${id}`).style.color = tire.temp_color;
+
+                                                // Update Race Dash
+                                                document.getElementById(`race_temp_${id}`).innerText = tempStr;
+                                                document.getElementById(`race_temp_${id}`).style.color = tire.temp_color;
+                                                });
+                                            }
+
+                                            // Update Graphs & Traction (Main Dash)
+                                            tuneHist.push({
+                                            r: d.analysis.road || 0,
+                                            i: d.analysis.impact || 0,
+                                            t: (d.traction_triggers.front + d.traction_triggers.rear) / 2 || 0, // yellow
+                                            s: d.analysis.sim_road || 0     // purple
+                                            });
+                                            if(tuneHist.length > maxPts) tuneHist.shift();
+                                            draw(tuneCtx, tuneCanvas, tuneHist, [
+                                                {k: 'r', c: '#f44336'}, // Road (Rød)
+                                                {k: 'i', c: '#007acc'}, // Impact (Blå)
+                                                {k: 't', c: '#ffeb3b'}, // Traction (Gul)
+                                                {k: 's', c: '#9c27b0'}  // SimRoad (Lilla)
+                                                ], 2.0);
+                                            pedalHist.push({g:d.throttle || 0, b:d.brake || 0});
+                                            if(pedalHist.length>maxPts)pedalHist.shift();
+                                            draw(pedalCtx, pedalCanvas, pedalHist, [
+                                                {k: 'g', c: '#4caf50'}, // Throttle (Grøn)
+                                                {k: 'b', c: '#f44336'}  // Brake (Rød)
+                                                ], 100.0);
+                                            } else {
+                                                statusIndicator.innerText = isRunning ? "No Data" : "Offline"; statusIndicator.className = "status-box invalid";
+                                                }
+                                            } catch(e){}
+                                            }, 100);
+
+                                            //* --- STARTUP LOGIC: Husker sidste side --- */
+                                            window.addEventListener('load', () => {
+                                                const scroller = document.getElementById('scroller');
+                                                const width = window.innerWidth;
+                                                // Henter gemt side fra localStorage, eller bruger Side 2 som standard
+                                                const lastPage = localStorage.getItem('lastGTPage') || 2;
+
+                                                scroller.scrollTo({
+                                                    left: (lastPage - 1) * width,
+                                                    behavior: 'auto' // 'auto' gør at den hopper direkte til siden uden animation
+                                                        });
+                                                });
+
+                                                /* --- SWIPE NAVIGATION LOGIC: Opdaterer dots og gemmer side --- */
+                                                document.getElementById('scroller').addEventListener('scroll', () => {
+                                                    const scrollLeft = document.getElementById('scroller').scrollLeft;
+                                                    const width = window.innerWidth;
+                                                    let page = 1;
+
+                                                    // Beregner hvilken side vi er på baseret på scroll-position
+                                                    if (scrollLeft > width * 1.5) page = 3;
+                                                    else if (scrollLeft > width * 0.5) page = 2;
+
+                                                    // Opdaterer de visuelle prikker (dots) i bunden
+                                                    document.getElementById('dot1').classList.toggle('active', page === 1);
+                                                    document.getElementById('dot2').classList.toggle('active', page === 2);
+                                                    document.getElementById('dot3').classList.toggle('active', page === 3);
+
+                                                    // Gemmer den nuværende side i browserens hukommelse
+                                                    localStorage.setItem('lastGTPage', page);
+                                                    });
+                                                </script>
+                                                </body>
+                                            </html>
