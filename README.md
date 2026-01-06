@@ -177,7 +177,6 @@ Multi-Channel Support: Expand from 2-channel stereo to 4.0 or 5.1 surround sound
 ## 📂 Project Structure
 To run the application correctly, the files must be organized as follows:
 
-Plaintext
 ```
 .
 ├── pyproject.toml          # Build konfiguration
