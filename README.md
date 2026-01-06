@@ -36,9 +36,9 @@ Stereo Mode (2 Shakers): Full front-to-rear separation. Experience the curb tran
 
 Mono Mode (1 Shaker): Intelligent "Downmix" that sums all telemetry channels into a single mono signal, ensuring no data is lost for users with a single-transducer setup.
 
-![Dashboard Interface](./assets/Connectionpage.png)
+![Dashboard Interface](src/gt_shaker/assets/Connectionpage.png)
 
-![Dashboard Interface](./assets/RaceDash.png)
+![Dashboard Interface](src/gt_shaker/assets/RaceDash.png)
 
 ## 🛠 Prerequisites
 Hardware
@@ -134,8 +134,8 @@ Interactive Toggle: Includes a dedicated switch in the web dashboard to quickly 
 <td><b>Page 2: Shaker Tuning</b></td>
 </tr>
 <tr>
-<td><img src="./assets/SettingsPage1_2.png" width="400"></td>
-<td><img src="./assets/SettingsPage2_2.png" width="400"></td>
+<td><img src="src/gt_shaker/assets/SettingsPage1_2.png" width="400"></td>
+<td><img src="src/gt_shaker/assets/SettingsPage2_2.png" width="400"></td>
 </tr>
 </table>
 
