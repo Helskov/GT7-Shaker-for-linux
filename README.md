@@ -177,19 +177,25 @@ Multi-Channel Support: Expand from 2-channel stereo to 4.0 or 5.1 surround sound
 ## 📂 Project Structure
 To run the application correctly, the files must be organized as follows:
 
+Plaintext
+```
 .
-├── pyproject.toml          # Build configuration for the Python package
-├── requirements.txt        # List of dependencies (Flask, PyAudio, etc.)
-├── src/                    # Source directory
-│   └── gt_shaker/          # The main package folder (must contain __init__.py)
-│       ├── __init__.py     # Marks the directory as a Python package
-│       ├── web_app.py      # Flask server and API
-│       ├── main.py         # Core engine and audio stream
-│       ├── audio_processor.py # Haptic DSP logic
-│       ├── network_manager.py # UDP & Decryption logic
-│       ├── tire_processor.py  # Tire data formatting & traction logic
-│       ├── Simulated_Road.py  # Simulation of road surface textures
-│       └── templates/      # Required folder for Flask templates (must be inside package)
-│           ├── index.html  # The web dashboard UI
-│           └── manual.html # User manual page
-└── config.json             # Your saved settings (auto-generated in root or package)
+├── pyproject.toml          # Build konfiguration
+├── requirements.txt        # Afhængigheder (Flask, PyAudio, osv.)
+├── .gitignore              # Fortæller Git hvilke filer der skal springes over
+├── README.md               # Denne fil
+└── src/                    # Kildekode-mappe
+├── config.json         # Dine gemte indstillinger
+└── gt_shaker/          # Selve program-pakken
+├── __init__.py     # Markerer mappen som en pakke
+├── web_app.py      # Flask server og interface
+├── main.py         # Shaker motor og lyd-stream
+├── audio_processor.py # Lyd-logik og effekter
+├── network_manager.py # PS5 netværks-logik
+├── tire_processor.py  # Dæk-data og traction-loss
+├── Simulated_Road.py  # Simulering af vejoverflade
+├── assets/         # Billeder til dashboard og README
+└── templates/      # HTML filer til web-interfacet
+├── index.html
+└── manual.html            # Your saved settings (auto-generated in root or package)
+```
