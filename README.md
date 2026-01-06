@@ -48,13 +48,6 @@ Linux PC (or any system running Python) on the same local network as the PS5.
 
 Soundcard connected to an amplifier and haptic transducers (e.g., Buttkicker, Dayton Audio pucks).
 
-Software Dependencies
-You need Python 3.8+ and the following libraries installed:
-
-Bash
-
-pip install flask pyaudio numpy pycryptodome
-Note: pycryptodome is essential for handling the encrypted telemetry packets sent by the PS5.
 
 ## 💻 Installation & Usage
 Start by cloning the project to your local machine:
