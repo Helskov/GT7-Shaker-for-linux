@@ -59,23 +59,24 @@ Note: pycryptodome is essential for handling the encrypted telemetry packets sen
 ## 💻 Installation & Usage
 Start by cloning the project to your local machine:
 bash
-git clone [https://github.com/Helskov/GT7-Shaker-for-linux.git](https://github.com/Helskov/GT7-Shaker-for-linux.git)
-cd GT7-Shaker-for-linux
+    git clone [https://github.com/Helskov/GT7-Shaker-for-linux.git](https://github.com/Helskov/GT7-Shaker-for-linux.git)
+    cd GT7-Shaker-for-linux
 
 Modern Linux distributions (like Ubuntu 23.04+ or Debian 12+) require Python packages 
 to be installed in a virtual environment to protect system stability:
     
-python3 -m venv shaker-venv
-source shaker-venv/bin/activate
+    python3 -m venv shaker-venv
+    source shaker-venv/bin/activate
 
 You should now see (shaker-venv) in your terminal prompt.
 Install the required libraries (Flask, PyAudio, NumPy, etc.) inside your environment:
-pip install -r requirements.txt
+
+    pip install -r requirements.txt
 
 Since the project uses relative imports to manage audio and telemetry modules, it must be run as a Python module:
 
-cd src
-python3 -m gt_shaker.web_app
+    cd src
+    python3 -m gt_shaker.web_app
 
 Access the Dashboard: Open your browser (on PC or Smartphone) and go to http://[YOUR_PC_IP]:5000.
 
