@@ -176,25 +176,24 @@ Multi-Channel Support: Expand from 2-channel stereo to 4.0 or 5.1 surround sound
 
 ## 📂 Project Structure
 To run the application correctly, the files must be organized as follows:
-
 ```
 .
-├── pyproject.toml          # Build konfiguration
-├── requirements.txt        # Afhængigheder (Flask, PyAudio, osv.)
-├── .gitignore              # Fortæller Git hvilke filer der skal springes over
-├── README.md               # Denne fil
-└── src/                    # Kildekode-mappe
-├── config.json         # Dine gemte indstillinger
-└── gt_shaker/          # Selve program-pakken
-├── __init__.py     # Markerer mappen som en pakke
-├── web_app.py      # Flask server og interface
-├── main.py         # Shaker motor og lyd-stream
-├── audio_processor.py # Lyd-logik og effekter
-├── network_manager.py # PS5 netværks-logik
-├── tire_processor.py  # Dæk-data og traction-loss
-├── Simulated_Road.py  # Simulering af vejoverflade
-├── assets/         # Billeder til dashboard og README
-└── templates/      # HTML filer til web-interfacet
-├── index.html
-└── manual.html            # Your saved settings (auto-generated in root or package)
-```
+├── .gitignore               # Filer der skal ignoreres af Git
+├── LICENSE                  # Projektets licens
+├── pyproject.toml           # Build konfiguration til Python pakken
+├── README.md                # Dokumentation og vejledning
+├── requirements.txt         # Liste over nødvendige biblioteker
+└── src/                     # Kildekode-mappe
+    ├── config.json          # Brugerindstillinger (auto-genereret)
+    └── gt_shaker/           # Selve program-pakken
+        ├── __init__.py      # Markerer mappen som en pakke
+        ├── audio_processor.py # Lyd-logik og effekter
+        ├── main.py          # Hovedmotor og lyd-stream
+        ├── network_manager.py # PS5 netværks-kommunikation
+        ├── Simulated_Road.py # Vej-simulering
+        ├── tire_processor.py # Dæk- og traction-logik
+        ├── web_app.py       # Flask web-server og dashboard
+        ├── assets/          # Billeder til UI og README
+        └── templates/       # HTML filer til dashboardet
+            ├── index.html
+            └── manual.html
