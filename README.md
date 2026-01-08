@@ -147,26 +147,23 @@ Interactive Toggle: Includes a dedicated switch in the web dashboard to quickly 
 ## 🗺️ Roadmap & Future Plans
 The project is under active development. Below are the planned features and current "to-do" items:
 
-* **More stability to the engine. See outstanding. 
+* More stability to the engine. See outstanding. 
 
-* **Cleanup and see if i can make the code more effective. 
+* Cleanup and see if i can make the code more effective. 
 
-* **Maybe and just maybe support for motion. The integration should not be hard. But i have nothing to test with. 
+* Maybe and just maybe support for motion. The integration should not be hard. But i have nothing to test with. 
 
-* **Landscape Mode Optimization: Specific CSS layouts for horizontal viewing on mounted devices.
+* Landscape Mode Optimization: Specific CSS layouts for horizontal viewing on mounted devices.
 
-* **Multi-Channel Support: Expand from 2-channel stereo to 4.0 or 5.1 surround sound for 4-corner setups.
+* Multi-Channel Support: Expand from 2-channel stereo to 4.0 or 5.1 surround sound for 4-corner setups.
 
 ## 🛠️ In Progress / Outstanding
 
-* **Fix you sometimes have to restart engine when track changes or engine was already on when you started the game. 
+* Fix you sometimes have to restart engine when track changes or engine was already on when you started the game. 
 
 ## 🚀 Future Features (Planned)
 
-
-
-* **Support for Wind simulator
-
+* Support for Wind simulator
 
 ## Changes
 
