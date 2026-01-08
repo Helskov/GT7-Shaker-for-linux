@@ -91,47 +91,46 @@ Open Port 5000 as well for the browser.
 Connect to GT7: Enter your PS5 IP Address in the connection card and click START ENGINE.
 
 ## ⚙️ Interface & Configuration
-The web interface is divided into two main pages that you can navigate by swiping or clicking the navigation dots.
+## 📱 Web Interface & Functionality
 
-Page 1: Live Telemetry & Monitoring
+The web interface is designed for ease of use and is divided into two main pages. You can navigate between them by **swiping** on mobile devices or **clicking the navigation dots**.
 
-Real-time Gauges: Visual display of RPM, Speed, Gear, and Pedal (Throttle/Brake) inputs.
+---
 
-Tire Status: Monitoring of tire temperatures and wear percentages with color-coded alerts.
+### 📊 Page 1: Live Telemetry & Monitoring
+*Focuses on real-time data visualization while driving.*
 
-Shaker Analysis: Live graph showing the intensity of Road Noise vs. Impact Forces being sent to your shakers.
+* **Real-time Gauges**: Visual display of **RPM**, **Speed**, **Gear**, and **Pedal** (Throttle/Brake) inputs.
+* **Tire Status**: Monitoring of tire temperatures and wear percentages with color-coded alerts for optimal grip management.
+* **Shaker Analysis**: A live graph showing the intensity of **Road Noise (Red)** vs. **Impact Forces (Blue)** being sent to your transducers.
 
-Page 2: Advanced Shaker Tuning
-This page allows you to customize the physical feel of the haptic feedback.
+---
 
-General Settings:
+### ⚙️ Page 2: Advanced Shaker Tuning
+*This page allows you to customize the physical feel of the haptic feedback in real-time.*
 
-Master Volume: Global gain control that scales all active haptic effects.
+#### 🛠️ General Settings
+* **Master Volume**: Global gain control that scales all active haptic effects simultaneously.
+* **Audio Device**: Select which soundcard or USB interface the engine should use for output.
+* **Hardware Test**: Dedicated buttons to trigger 60Hz test tones for **Rear (Left)** or **Front (Right)** channels to verify wiring and shaker placement.
 
-Audio Device: Select which soundcard or USB interface the engine should use for output.
+#### 🏎️ Engine RPM
+* **Profiles**: Toggle between **Sine** (smooth), **V8** (simulated ignition pulses), and **Boxer** (rhythmic rumble).
+* **Frequency Range**: Define the **Min Hz** and **Max Hz** to match your hardware's resonance capabilities and personal preference.
 
-Hardware Test: Buttons to trigger 60Hz test tones for Rear (Left) or Front (Right) channels to verify wiring.
+#### 🛣️ Suspension & Environment
+* **Road vs. Impact**: Independent volume controls for subtle road textures and heavy bumps (curbs, grass, collisions).
+* **Priority Mode**: Automatically dims engine vibrations during heavy suspension hits to prioritize road feel and impact clarity.
 
-Engine RPM:
+#### 🏁 Traction & Grip
+* **Interface**: Dedicated sliders for **Sensitivity** and **Volume control**.
+* **Auto-calibration**: Toggle functionality to ensure the traction loss effect remains accurate across different car classes.
 
-Profiles: Toggle between Sine, V8 (simulated ignition pulses), and Boxer (rhythmic rumble).
+#### 🕹️ Gear Shift Feedback
+* **Mechanical Thump**: Generates a short, powerful vibration (tuned to 40Hz) every time the car changes gears to simulate mechanical shift linkage.
+* **Volume & Balance**: Granular control over the "kick" intensity and the ability to shift the effect between front and rear transducers.
+* **Interactive Toggle**: Includes a dedicated switch in the dashboard to quickly enable or disable the effect on the fly.
 
-Frequency Range: Define the Min Hz and Max Hz to match your hardware's resonance capabilities.
-
-Suspension & Environment:
-
-Road vs. Impact: Independent volume controls for subtle road textures and heavy bumps.
-
-Priority Mode: Automatically dims engine vibrations during heavy suspension hits to prioritize road feel.
-
-Traction & Grip Interface: Sliders for Sensitivity, volume control and autocalibration functionality
-
-Gear Shift Feedback:
-Mechanical Thump: Generates a short, vibration (tuned to 40Hz) every time the car changes gears to simulate mechanical shift linkage.
-
-Volume & Balance: Allows for granular control over the "kick" intensity and the ability to shift the effect between front and rear transducers.
-
-Interactive Toggle: Includes a dedicated switch in the web dashboard to quickly enable or disable the effect.
 
 <table>
 <tr>
