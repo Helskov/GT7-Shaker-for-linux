@@ -94,43 +94,64 @@ Connect to GT7: Enter your PS5 IP Address in the connection card and click START
 ## 📱 Web Interface & Functionality
 
 The web interface is designed for ease of use and is divided into two main pages. You can navigate between them by **swiping** on mobile devices or **clicking the navigation dots**.
+---
+
+### 🏎️ Page 1: Race Dashboard
+*Optimized for focus on essential race data.*
+
+* **High-Visibility Telemetry**: Large, clear displays for **RPM**, **Current Gear**, and **Speed (KM/H)** for instant recognition during high-speed maneuvers.
+* **Race Position & Timing**: Real-time tracking of your **Current Position (POS)** and precise lap timing, including **Last Lap** and **Best Lap** performance metrics.
+* **Live Tire Temperatures**: Individual temperature readouts for all four tires (**FL, FR, RL, RR**) to monitor grip levels and thermal degradation in real-time.
+* **On-the-Fly Profile Selection**: Quick-access buttons for **4 Preset Profiles (P1-P4)**, allowing you to switch between custom tuning setups (e.g., "Formel") instantly without leaving the dashboard.
 
 ---
 
-### 📊 Page 1: Live Telemetry & Monitoring
-*Focuses on real-time data visualization while driving.*
+### 📊 Page 2: Live Telemetry & Monitoring
+*Focuses on real-time data visualization while driving for optimizations.*
 
+* **Engine Control**: Features a dedicated **Start/Stop Engine** button to manually toggle the haptic processing engine.
+* **Connection Status**: Includes an **Online (Live)** status indicator that confirms the system is successfully receiving telemetry data from the console.
+* **Integrated Help**: A dedicated **Help** button provides immediate access to the manual and setup guides directly from the dashboard.
+* **Technical Readouts**: Detailed real-time data for **Gear**, **Speed**, and precise **Tire Temperatures**.
 * **Real-time Gauges**: Visual display of **RPM**, **Speed**, **Gear**, and **Pedal** (Throttle/Brake) inputs.
-* **Tire Status**: Monitoring of tire temperatures and wear percentages with color-coded alerts for optimal grip management.
-* **Shaker Analysis**: A live graph showing the intensity of **Road Noise (Red)** vs. **Impact Forces (Blue)** being sent to your transducers.
-
+* **Tire Status**: Monitoring of tire temperatures with color-coded alerts for optimal grip management.
+* **Pedal Telemetry**: A live bar and graph showing **Throttle (Green)** and **Brake (Red)** input levels.
+* **Shaker Signal Analysis**: A multi-channel graph analyzing the live intensity of **Road**, **Impact**, **Traction**, and **Sim-Road** haptic signals.
 ---
 
-### ⚙️ Page 2: Advanced Shaker Tuning
+### ⚙️ Page 3: Advanced Shaker Tuning
 *This page allows you to customize the physical feel of the haptic feedback in real-time.*
 
 #### 🛠️ General Settings
-* **Master Volume**: Global gain control that scales all active haptic effects simultaneously.
-* **Audio Device**: Select which soundcard or USB interface the engine should use for output.
-* **Hardware Test**: Dedicated buttons to trigger 60Hz test tones for **Rear (Left)** or **Front (Right)** channels to verify wiring and shaker placement.
+* **Global Gain**: Precise control over **Master Volume** (0-100%) to scale all active haptic effects.
+* **Screen & Theme**: Toggle **Keep Screen Awake** to prevent mobile devices from sleeping during sessions, and switch between **Light/Dark Mode** UI themes.
+* **Hardware Configuration**: Select your preferred **Measurement Units** (Metric vs. Imperial) and configure your **Shaker Mode** (e.g., Front/Rear Stereo).
+* **Audio Engine**: Select the specific **Audio Interface** (soundcard/USB) and set the **Sample Rate** (44.1 kHz or 48.0 kHz) for optimal compatibility.
+* **Hardware Output Test**: Dedicated buttons to **Test Rear** and **Test Front** channels (active when engine is off) to verify shaker wiring.
 
 #### 🏎️ Engine RPM
-* **Profiles**: Toggle between **Sine** (smooth), **V8** (simulated ignition pulses), and **Boxer** (rhythmic rumble).
-* **Frequency Range**: Define the **Min Hz** and **Max Hz** to match your hardware's resonance capabilities and personal preference.
+* **Custom Profiles**: Toggle between **Sine Wave** and other profiles, with independent **Volume** and **Axle Balance** (Rear/Front) controls.
+* **Frequency Tuning**: Manually define **Min Hz** and **Max Hz** to match your transducers' resonance range.
+* **Pit Boost**: Independent volume control for engine vibrations while the car is stationary.
 
-#### 🛣️ Suspension & Environment
-* **Road vs. Impact**: Independent volume controls for subtle road textures and heavy bumps (curbs, grass, collisions).
-* **Priority Mode**: Automatically dims engine vibrations during heavy suspension hits to prioritize road feel and impact clarity.
+#### 🛣️ Suspension
+* **Dual-Channel Feedback**: Independent sliders for **Road Vol (Red)** and **Impact Vol (Blue)**.
+* **Sensitivity Control**: Fine-tune the **Road Sensitivity** and **Impact Sensitivity** to filter out noise or emphasize heavy hits.
+* **Priority Logic**: Toggle **Priority Suspension over Engine Sound** to automatically dim RPM vibrations during heavy suspension travel for maximum clarity.
 
 #### 🏁 Traction & Grip
 * **Interface**: Dedicated sliders for **Sensitivity** and **Volume control**.
 * **Auto-calibration**: Toggle functionality to ensure the traction loss effect remains accurate across different car classes.
 
 #### 🕹️ Gear Shift Feedback
-* **Mechanical Thump**: Generates a short, powerful vibration (tuned to 40Hz) every time the car changes gears to simulate mechanical shift linkage.
-* **Volume & Balance**: Granular control over the "kick" intensity and the ability to shift the effect between front and rear transducers.
-* **Interactive Toggle**: Includes a dedicated switch in the dashboard to quickly enable or disable the effect on the fly.
+* **Shift Intensity: Dedicated Volume slider for the mechanical gear-change "thump."
+* **Axle Balance: Move the gear shift sensation between Rear and Front transducers to match your rig's physical layout.
 
+🏗️ Simulated Road Texture
+* **Haptic Surface: Adjustable Surface Texture and Road Effects volume for artificial road vibration.
+* **Roughness Tuning: Slider to change the road feel from Silk Smooth to Bumpy / Cobblestone.
+* **Wheelbase Logic: Advanced Speed-adaptive axle delay (e.g., 2.75m wheelbase logic) that ensures bumps hit the front and rear shakers at the correct timing based on vehicle speed.
+---
 
 <table>
 <tr>
