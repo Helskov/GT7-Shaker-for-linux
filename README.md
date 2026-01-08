@@ -192,22 +192,22 @@ Multi-Channel Support: Expand from 2-channel stereo to 4.0 or 5.1 surround sound
 To run the application correctly, the files must be organized as follows:
 ```
 .
-├── .gitignore               # Filer der skal ignoreres af Git
-├── LICENSE                  # Projektets licens
-├── pyproject.toml           # Build konfiguration til Python pakken
-├── README.md                # Dokumentation og vejledning
-├── requirements.txt         # Liste over nødvendige biblioteker
-└── src/                     # Kildekode-mappe
-    ├── config.json          # Brugerindstillinger (auto-genereret)
-    └── gt_shaker/           # Selve program-pakken
-        ├── __init__.py      # Markerer mappen som en pakke
-        ├── audio_processor.py # Lyd-logik og effekter
-        ├── main.py          # Hovedmotor og lyd-stream
-        ├── network_manager.py # PS5 netværks-kommunikation
-        ├── Simulated_Road.py # Vej-simulering
-        ├── tire_processor.py # Dæk- og traction-logik
-        ├── web_app.py       # Flask web-server og dashboard
-        ├── assets/          # Billeder til UI og README
-        └── templates/       # HTML filer til dashboardet
-            ├── index.html
-            └── manual.html
+├── **.gitignore** # Files to be ignored by Git
+├── **LICENSE** # Project license
+├── **pyproject.toml** # Build configuration for the Python package
+├── **README.md** # Documentation and instructions
+├── **requirements.txt** # List of required libraries
+└── **src/** # Source code directory
+    ├── **config.json** # User settings (auto-generated)
+    └── **gt_shaker/** # The main program package
+        ├── **__init__.py** # Marks the directory as a package
+        ├── **audio_processor.py** # Audio logic and effects
+        ├── **main.py** # Main engine and audio stream
+        ├── **network_manager.py** # PS5 network communication
+        ├── **Simulated_Road.py** # Road simulation
+        ├── **tire_processor.py** # Tire and traction logic
+        ├── **web_app.py** # Flask web server and dashboard
+        ├── **assets/** # Images for UI and README
+        └── **templates/** # HTML files for the dashboard
+            ├── **index.html**
+            └── **manual.html**
