@@ -192,22 +192,22 @@ Multi-Channel Support: Expand from 2-channel stereo to 4.0 or 5.1 surround sound
 To run the application correctly, the files must be organized as follows:
 ```
 .
-├── **.gitignore** # Files to be ignored by Git
-├── **LICENSE** # Project license
-├── **pyproject.toml** # Build configuration for the Python package
-├── **README.md** # Documentation and instructions
-├── **requirements.txt** # List of required libraries
-└── **src/** # Source code directory
-    ├── **config.json** # User settings (auto-generated)
-    └── **gt_shaker/** # The main program package
-        ├── **__init__.py** # Marks the directory as a package
-        ├── **audio_processor.py** # Audio logic and effects
-        ├── **main.py** # Main engine and audio stream
-        ├── **network_manager.py** # PS5 network communication
-        ├── **Simulated_Road.py** # Road simulation
-        ├── **tire_processor.py** # Tire and traction logic
-        ├── **web_app.py** # Flask web server and dashboard
-        ├── **assets/** # Images for UI and README
-        └── **templates/** # HTML files for the dashboard
-            ├── **index.html**
-            └── **manual.html**
+├── .gitignore # Files to be ignored by Git
+├── LICENSE # Project license
+├── pyproject.toml # Build configuration for the Python package
+├── README.md # Documentation and instructions
+├── requirements.txt # List of required libraries
+└── src/ # Source code directory
+    ├── config.json # User settings (auto-generated)
+    └── gt_shaker/ # The main program package
+        ├── __init__.py # Marks the directory as a package
+        ├── audio_processor.py # Audio logic and effects
+        ├── main.py # Main engine and audio stream
+        ├── network_manager.py # PS5 network communication
+        ├── Simulated_Road.py # Road simulation
+        ├── tire_processor.py # Tire and traction logic
+        ├── web_app.py # Flask web server and dashboard
+        ├── assets/ # Images for UI and README
+        └── templates/ # HTML files for the dashboard
+            ├── index.html
+            └── manual.html
