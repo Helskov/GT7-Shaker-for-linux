@@ -156,37 +156,45 @@ Landscape Mode Optimization: Specific CSS layouts for horizontal viewing on moun
 Multi-Channel Support: Expand from 2-channel stereo to 4.0 or 5.1 surround sound for 4-corner setups.
 
 ## Changes
-1.25 New:   More aggrasive Engine effec following the RPM faster. Before it was like a old school Automatic gearbox. 
-            User interface for the Pit Boost effect so user can control the volume of the engine while stationary
-            Prevent ALSA lock when starting and stopping Engine
-            Simulated Road Effect with handle for roughness of simulated bumps. when driving forward bumps will hit frontshaker 
-            and then rear shaker. Time in between is calculated on speed. Effect is reverse when car is in reverse. New file Simulated_Road.py
-            Start/Stop engine button is now in sync across browsers. 
-            Keep Screen on functionality on Phones. 
-            New Race Dashboard with focus on race
-            Sliders for frequencies on traction for front and rear axle. Replaced the readout for traction effect. 
-            User can now set the soundcard settings to 44.1 or 48khz on the interface. 
-            Various bug fixes and stability Optimization
 
-1.26        Fixed graph for throttle, brake and suspension Analysis
+### v1.28
+* **Added Profiles**: Users can now save and name up to 4 different profiles.
+* **Persistence**: All settings are now saved to `config.json`.
+* **Haptic Improvement**: Road surface texture changed to a more haptic range (20-80Hz).
+* **Traction Loss Priority**: Function added to prioritize traction loss over suspension and engine RPM.
+* **Custom Headroom**: User-defined headroom for Safe-Gain (40-70%).
+* **PWA Optimization**: Improved user manual for Android and iPhone.
+* **Default Settings**: Updated defaults to provide a better "out of the box" experience.
+* **Traction Calibration**: Faster auto-calibration that works during races; triggers when lifting gas while driving straight.
 
-1.27        Pit boost volume decoupled from Engine RPM volume
-            Fix of Engine effect stuck after leaving track.
-            changed max volume for gear shift and Pit Boost. 
-            Made status more robost with 3 status, and software dont crash when activating engine while not data yet. 
-            Removed Tire wear. did not work properly
-            Added Pos, Bestlap and last lap to race dash. 
-            Web always starts default page 2. 
-            Shaker analysis now with traction and road simulation. 
-            
-1.28        Added profiles. So user can have 4 profiles. They can be named. All settings is saved to config.json
-            Road Surface texture changed to be more haptic in the range from 20-80hz. 
-            Traction loss priority function. To prioritize traction loss over suspension and engine RPM. 
-            User defined headroom for the Safe-Gain. 40-70%. 
-            PWA Optimization of user manual for android and iphone. 
-            Set up default settings so they match my prefered settings to give a good Experience out of the box
-            Changed the Auto calib for traction control to be faster and work during races. It will calibrate everytime
-            you lift the gas and drive straight if enabled. 
+### v1.27
+* **Audio Mixing**: Pit boost volume is now decoupled from Engine RPM volume.
+* **Stability**: Fixed "stuck" engine effect after leaving track and prevented crashes when starting the engine without data.
+* **Volume Adjustments**: Changed max volume for Gear Shift and Pit Boost.
+* **Enhanced Status**: Implemented a more robust 3-stage status system.
+* **Race Dashboard**: Added Position, Best Lap, and Last Lap; UI now defaults to Page 2.
+* **Analysis**: Shaker analysis now includes traction and road simulation.
+* **Removed**: Tire wear functionality (did not work properly).
+
+### v1.26
+* **Visuals**: Fixed graphs for throttle, brake, and suspension analysis.
+
+### v1.25
+* **Engine Effect**: More aggressive engine effect that follows RPM faster (previously felt like an old-school automatic).
+* **Pit Boost UI**: New interface to control engine volume while stationary.
+* **ALSA Support**: Prevented ALSA locks during engine start/stop on Linux.
+* **Simulated Road Effect**: 
+* New file: `Simulated_Road.py`.
+* Roughness handle for bumps.
+* Speed-based timing: Bumps hit front shakers then rear (reversed in reverse gear).
+* **UI/UX**: 
+* Start/Stop button stays in sync across multiple browsers.
+* Added "Keep Screen On" functionality for mobile phones.
+* New Race Dashboard focusing on race-critical data.
+* **Traction Control**: Added frequency sliders for front and rear axles and replaced the traction readout.
+* **Audio Settings**: Users can now toggle between 44.1kHz and 48kHz.
+* **General**: Various bug fixes and stability optimizations.
+  you lift the gas and drive straight if enabled. 
 
 ## 📂 Project Structure
 To run the application correctly, the files must be organized as follows:
