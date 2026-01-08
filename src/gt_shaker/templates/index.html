@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GT7 Shaker for linux v1.27</title>
+<title>GT7 Shaker for linux v1.28</title>
 
 <style>
 /* --- COLOR PALETTE AND CSS VARIABLES --- */
@@ -50,7 +50,60 @@ body { background: var(--bg); color: var(--text); font-family: sans-serif; margi
     border-color: #ff9800;
     box-shadow: 0 0 10px rgba(255, 152, 0, 0.2);
     }
+.profile-card {
+    background: rgba(20, 20, 25, 0.9);
+    border: 1px solid #333;
+    padding: 15px;
+    border-radius: 12px;
+    margin-top: 10px;
+    }
 
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 8px;
+    }
+
+.profile-title {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: bold;
+    width: 100%;
+    outline: none;
+    }
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    }
+
+.p-btn {
+    background: #2a2a35;
+    color: #888;
+    border: 2px solid #444;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    }
+
+.p-btn.active {
+    color: #fff;
+    border-color: #00e5ff;
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+    background: #00e5ff22;
+    }
+
+.p-btn:hover:not(.active) {
+    border-color: #888;
+    color: #fff;
+    }
 body.light-mode {
     --bg: #f5f5f5; --panel: #ffffff; --text: #222222;
     }
@@ -160,7 +213,25 @@ input:checked + .slider:before { transform: translateX(20px); }
     </div>
     {% endfor %}
     </div>
+    <div class="card profile-card">
+    <div class="profile-header">
+    <span class="status-dot"></span>
+    <input type="text" id="profile-name-input" class="profile-title"
+    value="{{ config.profiles[config.active_profile_id].name }}"
+    onchange="updateProfileName(this.value)">
+    <i class="edit-icon">✎</i>
     </div>
+
+    <div class="profile-grid">
+    <button onclick="switchProfile('1')" id="btn-p1" class="p-btn {% if config.active_profile_id == '1' %}active{% endif %}">P1</button>
+    <button onclick="switchProfile('2')" id="btn-p2" class="p-btn {% if config.active_profile_id == '2' %}active{% endif %}">P2</button>
+    <button onclick="switchProfile('3')" id="btn-p3" class="p-btn {% if config.active_profile_id == '3' %}active{% endif %}">P3</button>
+    <button onclick="switchProfile('4')" id="btn-p4" class="p-btn {% if config.active_profile_id == '4' %}active{% endif %}">P4</button>
+    </div>
+    </div>
+    </div>
+    <p style="text-align: center; color: #666; font-size: 0.75rem; margin-top: 30px; margin-bottom: 5px;">Copyright (C) 2026 Soeren Helskov</p>
+
     <p style="text-align: center; color: #444; font-size: 0.7rem; margin-top: 20px;">Swipe left for controls & settings</p>
     </div>
 
@@ -222,7 +293,9 @@ input:checked + .slider:before { transform: translateX(20px); }
         <h2>General Settings</h2>
     <div style="display:flex; justify-content:space-between;"><label>Master Volume</label><span id="master_vol_disp" class="val-label">{{ (config.master_volume|float * 100)|int }}%</span></div>
     <input type="range" id="master_vol" min="0" max="1" step="0.01" value="{{ config.master_volume }}" oninput="document.getElementById('master_vol_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
-
+    <div style="display:flex; justify-content:space-between; margin-top:15px;"><label>Output Headroom</label><span id="headroom_val_disp" class="val-label">{{ (config.output_headroom|float * 100)|int if config.output_headroom is defined else 45 }}%</span></div>
+    <input type="range" id="output_headroom" min="0.40" max="0.70" step="0.01" value="{{ config.output_headroom if config.output_headroom is defined else 0.45 }}" oninput="document.getElementById('headroom_val_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
+    <p style="color: #f44336; font-size: 0.65rem; margin-top: -5px; font-style: italic;">Caution: High settings may cause clipping and muddy effects.</p>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:10px; border-top: 1px solid #333;">
     <label>Keep Screen Awake</label>
     <label class="switch">
@@ -316,11 +389,11 @@ input:checked + .slider:before { transform: translateX(20px); }
 
     <div style="border-top: 1px solid #333; margin-top: 10px; padding-top: 10px;">
     <div style="display:flex; justify-content:space-between;"><label style="color:#f44336">Road Sensitivity (Red)</label><span id="thresh_val" class="val-label">{{ config.effects.suspension.threshold }}</span></div>
-    <div class="help-labels"><span>Max Detail</span><span>Noisy</span></div>
+    <div class="help-labels"><span>More road details</span><span>Lest road details</span></div>
     <input type="range" id="susp_thresh" min="0.0" max="1.0" step="0.01" value="{{ config.effects.suspension.threshold }}" oninput="document.getElementById('thresh_val').innerText=this.value" onchange="sendUpdate()">
 
     <div style="margin-top:15px; display:flex; justify-content:space-between;"><label style="color:#007acc">Impact Sensitivity (Blue)</label><span id="impact_thresh_val" class="val-label">{{ config.effects.suspension.impact_threshold }}</span></div>
-    <div class="help-labels"><span>Sensitive</span><span>Hard</span></div>
+    <div class="help-labels"><span>Less curb detals</span><span>More curb details</span></div>
     <input type="range" id="susp_impact_thresh" min="0.5" max="40.0" step="0.1" value="{{ config.effects.suspension.impact_threshold }}" oninput="document.getElementById('impact_thresh_val').innerText=this.value" onchange="sendUpdate()">
     </div>
 
@@ -351,6 +424,13 @@ input:checked + .slider:before { transform: translateX(20px); }
 
         <div style="display:flex; justify-content:space-between; margin-top:10px;"><label>Rear Frequency (Slip)</label><span id="traction_rear_freq_disp" class="val-label">{{ config.effects.traction.rear_freq }} Hz</span></div>
         <input type="range" id="traction_rear_freq" min="25" max="70" step="1" value="{{ config.effects.traction.rear_freq }}" oninput="document.getElementById('traction_rear_freq_disp').innerText=this.value+' Hz'" onchange="sendUpdate()">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+        <label>Priority traction effect</label>
+        <label class="switch">
+        <input type="checkbox" id="traction_priority" {% if config.effects.traction.priority %}checked{% endif %} onchange="sendUpdate()">
+        <span class="slider"></span>
+        </label>
+        </div>
         </div>
         </div>
 
@@ -451,6 +531,7 @@ input:checked + .slider:before { transform: translateX(20px); }
                 const payload = {
                     ps5_ip: document.getElementById('ps5_ip').value,
                     master_volume: document.getElementById('master_vol').value,
+                    output_headroom: document.getElementById('output_headroom').value,
                     units: document.getElementById('units').value,
                     shaker_mode: parseInt(document.getElementById('shaker_mode').value),
                     audio: {
@@ -482,7 +563,8 @@ input:checked + .slider:before { transform: translateX(20px); }
                         sensitivity: document.getElementById('traction_sens').value,
                         use_autocalib: document.getElementById('traction_calib').checked,
                         front_freq: document.getElementById('traction_front_freq').value,
-                        rear_freq: document.getElementById('traction_rear_freq').value
+                        rear_freq: document.getElementById('traction_rear_freq').value,
+                        priority: document.getElementById('traction_priority').checked
                         },
                     gear_shift: {
                         enabled: document.getElementById('gear_enabled').checked,
@@ -500,7 +582,109 @@ input:checked + .slider:before { transform: translateX(20px); }
                     await fetch('/api/update', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
                     } catch (err) {}
                     }
+                    /* --- PROFILE MANAGEMENT --- */
+                    let currentProfileId = '{{ config.active_profile_id }}';
 
+                    async function switchProfile(id) {
+                        currentProfileId = id;
+                        try {
+                            const response = await fetch('/api/profiles/select', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({id: id})
+                                });
+                            const data = await response.json();
+
+                            if(data.status === 'ok') {
+                                // 1. Marker den aktive knap i UI
+                                document.querySelectorAll('.p-btn').forEach(btn => btn.classList.remove('active'));
+                                document.getElementById('btn-p' + id).classList.add('active');
+
+                                // 2. Opdater tekstfeltet med profilnavnet
+                                document.getElementById('profile-name-input').value = data.config.profiles[id].name;
+
+                                // 3. Opdater alle skydere og kontakter på Side 3
+                                syncUIWithNewProfile(data.config);
+
+                                console.log("Profile " + id + " loaded");
+                                }
+                            } catch (err) { console.error("Profile switch failed:", err); }
+                            }
+
+                            function updateProfileName(newName) {
+                                fetch('/api/profiles/rename', {
+                                    method: 'POST',
+                                    headers: {'Content-Type': 'application/json'},
+                                    body: JSON.stringify({id: currentProfileId, name: newName})
+                                    });
+                                }
+
+                            function syncUIWithNewProfile(config) {
+                                const effects = config.effects;
+
+                                // --- Global Settings ---
+                                document.getElementById('master_vol').value = config.master_volume;
+                                document.getElementById('master_vol_disp').innerText = Math.round(config.master_volume * 100) + '%';
+                                document.getElementById('output_headroom').value = config.output_headroom || 0.45;
+                                document.getElementById('headroom_val_disp').innerText = Math.round((config.output_headroom || 0.45) * 100) + '%';
+                                document.getElementById('units').value = config.units;
+
+                                // --- RPM ---
+                                document.getElementById('rpm_enabled').checked = effects.rpm.enabled;
+                                document.getElementById('rpm_vol').value = effects.rpm.volume;
+                                document.getElementById('rpm_val_disp').innerText = Math.round(effects.rpm.volume * 100) + '%';
+                                document.getElementById('rpm_bal').value = effects.rpm.balance;
+                                document.getElementById('rpm_profile').value = effects.rpm.profile;
+                                document.getElementById('rpm_min').value = effects.rpm.min_freq;
+                                document.getElementById('rpm_max').value = effects.rpm.max_freq;
+                                document.getElementById('rpm_pit_boost').value = effects.rpm.pit_boost;
+                                document.getElementById('rpm_pit_boost_val').innerText = Math.round(effects.rpm.pit_boost * 100) + '%';
+
+                                // --- Suspension ---
+                                document.getElementById('susp_enabled').checked = effects.suspension.enabled;
+                                document.getElementById('susp_road_vol').value = effects.suspension.road_volume;
+                                document.getElementById('road_vol_disp').innerText = Math.round(effects.suspension.road_volume * 100) + '%';
+                                document.getElementById('susp_impact_vol').value = effects.suspension.impact_volume;
+                                document.getElementById('impact_vol_disp').innerText = Math.round(effects.suspension.impact_volume * 100) + '%';
+                                document.getElementById('susp_thresh').value = effects.suspension.threshold;
+                                document.getElementById('thresh_val').innerText = effects.suspension.threshold;
+                                document.getElementById('susp_impact_thresh').value = effects.suspension.impact_threshold;
+                                document.getElementById('impact_thresh_val').innerText = effects.suspension.impact_threshold;
+                                document.getElementById('susp_bal').value = effects.suspension.balance;
+                                document.getElementById('susp_priority').checked = effects.suspension.priority;
+
+                                // --- Traction ---
+                                document.getElementById('traction_enabled').checked = effects.traction.enabled;
+                                document.getElementById('traction_vol').value = effects.traction.volume;
+                                document.getElementById('traction_vol_disp').innerText = Math.round(effects.traction.volume * 100) + '%';
+                                document.getElementById('traction_thresh').value = effects.traction.threshold;
+                                document.getElementById('traction_thresh_val').innerText = effects.traction.threshold;
+                                document.getElementById('traction_sens').value = effects.traction.sensitivity;
+                                document.getElementById('traction_sens_val').innerText = effects.traction.sensitivity;
+                                document.getElementById('traction_calib').checked = effects.traction.use_autocalib;
+                                document.getElementById('traction_front_freq').value = effects.traction.front_freq;
+                                document.getElementById('traction_front_freq_disp').innerText = effects.traction.front_freq + ' Hz';
+                                document.getElementById('traction_rear_freq').value = effects.traction.rear_freq;
+                                document.getElementById('traction_rear_freq_disp').innerText = effects.traction.rear_freq + ' Hz';
+                                document.getElementById('traction_priority').checked = effects.traction.priority;
+
+                                // --- Gear Shift ---
+                                document.getElementById('gear_enabled').checked = effects.gear_shift.enabled;
+                                document.getElementById('gear_vol').value = effects.gear_shift.volume;
+                                document.getElementById('gear_vol_disp').innerText = Math.round(effects.gear_shift.volume * 100) + '%';
+                                document.getElementById('gear_bal').value = effects.gear_shift.balance;
+
+                                // --- Sim Road ---
+                                document.getElementById('road_sim_enabled').checked = effects.sim_road.enabled;
+                                document.getElementById('road_texture_vol').value = effects.sim_road.texture_volume;
+                                document.getElementById('road_texture_vol_disp').innerText = Math.round(effects.sim_road.texture_volume * 100) + '%';
+                                document.getElementById('road_texture_freq').value = effects.sim_road.texture_freq;
+                                document.getElementById('road_texture_freq_disp').innerText = effects.sim_road.texture_freq + ' Hz';
+                                document.getElementById('road_sim_vol').value = effects.sim_road.volume;
+                                document.getElementById('road_sim_vol_disp').innerText = Math.round(effects.sim_road.volume * 100) + '%';
+                                document.getElementById('road_sim_rough').value = effects.sim_road.roughness;
+                                document.getElementById('road_rough_val').innerText = effects.sim_road.roughness;
+                                }
                     /* --- TELEMETRY POLLING LOOP (10Hz) --- */
                     setInterval(async () => {
                         try {

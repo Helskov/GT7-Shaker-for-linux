@@ -2,157 +2,269 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>GT7 Shaker for Linux - User Manual</title>
-<style>
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #e0e0e0; background: #121212; max-width: 1000px; margin: 0 auto; padding: 20px; }
-header { background: linear-gradient(135deg, #007acc 0%, #004a7c 100%); color: white; padding: 40px; text-align: center; border-radius: 12px; margin-bottom: 30px; }
-h1 { margin: 0; font-size: 2.2rem; }
-h2 { color: #007acc; border-bottom: 2px solid #333; padding-bottom: 10px; margin-top: 40px; text-transform: uppercase; letter-spacing: 2px; }
-h3 { color: #4caf50; border-left: 4px solid #4caf50; padding-left: 15px; margin-top: 30px; background: rgba(76, 175, 80, 0.1); padding-top: 10px; padding-bottom: 10px; }
-.page-badge { background: #333; color: #007acc; padding: 5px 15px; border-radius: 6px; font-weight: bold; border: 1px solid #007acc; margin-right: 10px; }
-.section-card { background: #1e1e1e; border: 1px solid #333; padding: 25px; border-radius: 12px; margin-bottom: 25px; }
-.firewall-box { background: #000; color: #00ff00; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; border: 1px solid #00ff00; }
-ul { padding-left: 20px; }
-li { margin-bottom: 12px; }
-strong { color: #007acc; }
-.label-desc { color: #888; font-size: 0.9rem; font-style: italic; display: block; margin-top: 4px; }
-</style>
-</head>
-<body>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GT7 Shaker for Linux - User Manual v1.28</title>
 
-<header>
-<h1>GT7 SHAKER FOR LINUX v1.27</h1>
-<p>Telemetry & Haptic feedback Control Manual</p>
-</header>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1e1e1e">
 
-<div class="section-card">
-<h2>Network Setup</h2>
-<p>For the system to receive telemetry, your Linux host must allow the following UDP communication:</p>
-<div class="firewall-box">
-# Inbound: Port 33740 (UDP) - Receives telemetry packets from GT7<br>
-# Outbound: Port 33739 (UDP) - Sends heartbeats to PS5/PS4
-# Outbound: Port 5000 (TCP) - For web interface
-</div>
-</div>
+    <style>
+    /* --- GLOBAL STYLE & LAYOUT --- */
+    body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background: #121212;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0; /* Fjernet padding for at gøre plads til sticky nav */
+            }
 
-        <section>
-        <h2><span class="page-badge">Page 1</span> Race Dashboard (Visuals)</h2>
-        <div class="section-card">
-        <p>This view is optimized for real-time monitoring while driving.</p>
+    /* --- STICKY TOP NAVIGATION --- */
+    .back-nav {
+            position: sticky;
+            top: 0;
+            background: #1e1e1e;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            z-index: 1000;
+            }
 
-        <ul>
-        <li><strong>RPM Race Bar:</strong> Displays smoothed engine RPM using a 12-sample moving average.
-        <ul>
-        <li><strong>Green (Shift):</strong> Optimal shift point.</li>
-        <li><strong>Red (Limit):</strong> Blinks at the hard rev limit or when the engine limiter is active.</li>
-        </ul>
-        </li>
-        <li><strong>Gear & Speed:</strong> Large-scale digital readouts for current gear and velocity.</li>
-        <li><strong>Tire Status Grid:</strong> Monitors temperature (°C/F) FL, FR, RL, and RR tires individually.</li>
-        <li><strong>Analysis Graphs:</strong> Real-time visualizations of Road Texture (Red) and Suspension Impact (Blue) signals.</li>
-        </ul>
-        </div>
-        </section>
+    .back-btn {
+            background: #2a2a35;
+            color: #007acc;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border: 1px solid #444;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            }
 
-        <section>
-        <h2><span class="page-badge">Page 2</span> Start and analysis</h2>
-        <div class="section-card">
-        <p>This view is for analysis of shaker behavior with some raca data, status of data connection and access to help.</p>
+    .back-btn:active {
+            background: #007acc;
+            color: white;
+            transform: scale(0.95);
+            }
 
-        <ul>
-        <li><strong>Help:</strong> Access to builtin manual
-        <li><strong>Connection IP:</strong> Put in the IP of your console here</li>
-        <li><strong>Connection status</strong> Offline when shaker engine off / Standby(no data) when shaker engine on but no data recieved. / online when recieving telemetry data</li>
-        <li><strong>Start/stop engine</strong> Start / Stop Shaker and telemetry engine</li>
-        <li><strong>Race data</strong> Life data of gear and Speed</li>
-        <li><strong>Tire Status Grid:</strong> Monitors temperature (°C/F) for FL, FR, RL, and RR tires individually.</li>
-        <li><strong>Throttle and Brake graph</strong> Real-time visualizations of throttle (green) and brake (red)</li>
-        <li><strong>Analysis Graphs:</strong> Real-time visualizations of Road Texture (Red) and Suspension Impact (Blue) signals.</li>
-        </ul>
-        </div>
-        </section>
+    /* --- CONTENT STYLES --- */
+    .content-wrapper { padding: 20px; }
+
+    header {
+            background: linear-gradient(135deg, #007acc 0%, #004a7c 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            }
+
+    h1 { margin: 0; font-size: 2.2rem; }
+    h2 { color: #007acc; border-bottom: 2px solid #333; padding-bottom: 10px; margin-top: 40px; text-transform: uppercase; letter-spacing: 2px; }
+    h3 { color: #4caf50; border-left: 4px solid #4caf50; padding-left: 15px; margin-top: 30px; background: rgba(76, 175, 80, 0.1); padding-top: 10px; padding-bottom: 10px; }
+
+    .page-badge { background: #333; color: #007acc; padding: 5px 15px; border-radius: 6px; font-weight: bold; border: 1px solid #007acc; margin-right: 10px; }
+    .section-card { background: #1e1e1e; border: 1px solid #333; padding: 25px; border-radius: 12px; margin-bottom: 25px; }
+    .firewall-box { background: #000; color: #00ff00; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; border: 1px solid #00ff00; }
+
+    ul { padding-left: 20px; }
+    li { margin-bottom: 12px; }
+    strong { color: #007acc; }
+    .label-desc { color: #888; font-size: 0.9rem; font-style: italic; display: block; margin-top: 4px; }
+
+    footer { text-align: center; color: #555; font-size: 0.8rem; margin-top: 50px; padding-bottom: 40px; }
+    </style>
+    </head>
+    <body>
+
+    <nav class="back-nav">
+    <a href="/" class="back-btn">
+    <span>←</span> Tilbage til Dashboard
+    </a>
+    </nav>
+
+    <div class="content-wrapper">
+    <header>
+    <h1>GT7 SHAKER FOR LINUX v1.28</h1>
+    <p>Telemetry & Haptic feedback Control Manual</p>
+    </header>
+
+    <div class="section-card">
+    <h2>Network Setup</h2>
+    <p>For the system to receive telemetry, your Linux host must allow the following UDP communication:</p>
+    <div class="firewall-box">
+    # Inbound: Port 33740 (UDP) - Receives telemetry packets from GT7<br>
+    # Outbound: Port 33739 (UDP) - Sends heartbeats to PS5/PS4<br>
+    # Outbound: Port 5000 (TCP) - For web interface
+    </div>
+    </div>
+
+    <section>
+    <h2><span class="page-badge">Page 1</span> Race Dashboard (Visuals)</h2>
+    <div class="section-card">
+    <p>This view is optimized for real-time monitoring while driving.</p>
+    <ul>
+    <li><strong>RPM Race Bar:</strong> Displays smoothed engine RPM using a 12-sample moving average.
+    <ul>
+    <li><strong>Green (Shift):</strong> Optimal shift point.</li>
+    <li><strong>Red (Limit):</strong> Blinks at the hard rev limit or when the engine limiter is active.</li>
+    </ul>
+    </li>
+    <li><strong>Gear & Speed:</strong> Large-scale digital readouts for current gear and velocity.</li>
+    <li><strong>Tire Status Grid:</strong> Monitors temperature (°C/F) FL, FR, RL, and RR tires individually.</li>
+    <li><strong>Profiles:</strong> Create 4 profiles with individual settings. Settings will be stored in config.json You can rename your profiles.</li>
+
+    </ul>
+    </div>
+    </section>
+
+    <section>
+    <h2><span class="page-badge">Page 2</span> Start and Analysis</h2>
+    <div class="section-card">
+    <p>This view is for analysis of shaker behavior with race data and connection status.</p>
+    <ul>
+    <li><strong>Help:</strong> Access to this manual.</li>
+    <li><strong>Connection IP:</strong> Put in the IP of your console here.</li>
+    <li><strong>Connection Status:</strong> Offline when engine is off, Standby when waiting for data, Online when receiving telemetry.</li>
+    <li><strong>Start/Stop Engine:</strong> Manages the Shaker and telemetry engine.</li>
+    <li><strong>Throttle and Brake Graph:</strong> Real-time visualization of your pedal inputs.</li>
+    <li><strong>Analysis Graph:</strong> Real-time visualizations of Suspension, Traction and Road texture signals.</li>
+    </ul>
+    </div>
+    </section>
+
+    <section>
+    <h2><span class="page-badge">Page 3</span> System Settings & Handles</h2>
+    <p>Calibration of the tactile engine.</p>
+
+    <div class="section-card">
+    <h3>General Settings</h3>
+    <ul>
+    <li><strong>Master Volume:</strong> Main gain slider. Recommended: 90%.</li>
+    <li><strong>Output Headroom:</strong> Adjusts the signal limit to prevent clipping (40-70%). Recommended: 45%</li>
+    <li><strong>Screen Awake:</strong> Toggles browser wake lock.</li>
+    <li><strong>Light Mode UI:</strong> Toggles dark or light mode</li>
+    <li><strong>Shaker Mode:</strong> Switch between 2 Shakers (Stereo) or 1 Shaker (Mono).</li>
+    <li><strong>Audio Interface:</strong> Choose your soundcard for the shakers. And choose your samplerate 44.1 or 48kHz</li>
+    <li><strong>Hardware Output Test: </strong> Test Rear" and "Test Front" buttons to verify physical wiring. Buttons only active when shaker engine is stopped</li>
+    </ul>
+    </div>
+
+    <div class="section-card">
+    <h3>Engine RPM Effect</h3>
+    <ul>
+    <li><strong>Volume & Axle Balance:</strong> Sets the base vibration strength and balances it between front and rear axles. Recommended setting for volume 40%</li>
+    <li><strong>Motor Profile:</strong> Choose between Sine, V8 (Pulses), or Boxer waveforms.</li>
+    <li><strong>Min/Max Hz:</strong> Frequency range of the engine vibrations. Recommended: 35 - 100Hz.</li>
+    <li><strong>Pit Boost:</strong> Extra intensity when stationary.</li>
+    </ul>
+    </div>
+
+    <div class="section-card">
+    <h3>Suspension Effects</h3>
+    <ul>
+    <li><strong>Road Vol (Red):</strong> Volume for telemetry-driven road vibration.</li>
+    <li><strong>Impact Vol (Blue):</strong> Volume for suspension thumps (curbs, jumps, crashes).</li>
+    <li><strong>Road Sensitivity Sliders:</strong> Adjusts the "Threshold" for when road noise are triggered. Low value gives more road details. </li>
+    <li><strong>Impact Sensitivity Sliders:</strong> Adjusts the "Threshold" for when impact noise are triggere like curbs. High value like 35 gives more details on curbs</li>
+    <li><strong>Priority suspension over engine effect:</strong> Briefly lowers engine volume during heavy impacts for better tactile clarity.</li>
+    </ul>
+    </ul>
+    </div>
+
+    <div class="section-card">
+    <h3>Traction Loss</h3>
+    <ul>
+    <li><strong>Volume:</strong> Intensity of the sliding vibration.</li>
+    <li><strong>Slip Threshold:</strong> The sensitivity for when a slide is first detected.</li>
+    <li><strong>Slip Sensitivity:</strong> Controls how quickly the vibration ramps up during a slide.</li>
+    <li><strong>Autocalibration:</strong> Automatically optimizes slip detection for the current car's grip.</li>
+    <li><strong>Front Frequency:</strong> Frequency adjustment for front axele. Recommended setting: 58hz.</li>
+    <li><strong>Rear Frequency:</strong> Frequency adjustment for rear axele. Recommended setting: 35hz</li>
+    <li><strong>Priority traction effect:</strong> Briefly lowers engine and suspension volume during heavy traction loss to prioritize the effect</li>
+    </ul>
+    </div>
+
+    <div class="section-card">
+    <h3>Road simulation</h3>
+    <ul>
+    <li><strong>Surface Texture (Vol):</strong> Volume control for surface texture. Used as subtle background road noise .</li>
+    <li><strong>Surface Frequency:</strong> Adjusts the pitch (Hz) of the road rumble.</li>
+    <li><strong>Surface Effect (Vol):</strong>Volume control for surface Roughness effects.</li>
+    <li><strong>Surface Roughness:</strong> Adjusts the intensity of simulated cracks and unevenness.</li>
+    </ul>
+    </div>
+    </section>
+
+    <div class="section-card">
+    <h3>FAQ Section</h3>
+    <ul>
+    <li>
+    <strong>Telemetry Limitations & Track Fidelity:</strong>
+    The quality of haptic feedback is highly dependent on the specific track data provided by Gran Turismo 7.
+    While some circuits offer high-fidelity surface data, others may feel less detailed.
+    <em>Recommendation:</em> Use <strong>Circuit de la Sarthe</strong> for optimal testing of curb and road surface transitions.
+    </li>
+
+    <li>
+    <strong>Mobile Interface Optimization (PWA):</strong>
+    If the interface appears clipped or does not fit your mobile screen, it is highly recommended to install the dashboard as a <strong>Progressive Web App (PWA)</strong>.
+    On iPhone, tap the 'Share' icon and select <strong>'Add to Home Screen'</strong>.
+    This allows the dashboard to run in full-screen mode, acting as a native application without browser UI interference.
+    </li>
+
+    <li>
+    <strong>System Reset (Emergency Recovery):</strong>
+    Should the application encounter persistent errors or fail to initialize correctly, you can perform a manual reset by deleting the <code>config.json</code> file.
+    The software will automatically generate a fresh configuration with default values upon the next startup.
+    </li>
+
+    <li>
+    <strong>Backing Up Profiles:</strong>
+    Your custom tuning profiles are stored within the <code>config.json</code> file.
+    To secure your settings, it is recommended to keep a backup copy of this file in a safe location before performing updates or system changes.
+    </li>
+
+    <li>
+    <strong>Road Simulation Mechanics:</strong>
+    This effect provides a real-time simulation of tarmac textures, including undulations, cracks, and surface grit.
+    The signals are randomized and mathematically synchronized between the front and rear axles based on vehicle speed.
+    The calculations are based on a standardized <strong>2.75m wheelbase</strong> to ensure realistic timing of axle impacts.
+    </li>
+
+    <li>
+    <strong>Haptic Feedback during Menus/Pauses:</strong>
+    Vibrations may persist when the game is paused because GT7 continues to broadcast telemetry data as long as the car is on track.
+    The software relies on the active data stream to determine when to process effects; as long as the console sends data, the tactile engine remains active.
+    </li>
+
+    <li>
+    <strong>Restoring Lost Effects:</strong>
+    If tactile feedback ceases during a session, navigate to <strong>Page 2</strong> and toggle the Shaker Engine 'Off' and then 'On'.
+    Ensure the Status Indicator displays <strong>'Online'</strong>. If the issue remains, a full restart of the host application on your computer is recommended.
+    </li>
+
+    <li>
+    <strong>What settings should i use?:</strong>
+    Start with default settings. This is the settings i prefere. They should work well. Then  you can tune to your like. If you have changed
+    before reading this you can delete config.json and restart server. Then default settings will be restored.
+    </li>
 
 
-        <section>
-        <h2><span class="page-badge">Page 3</span> System Settings & Handles</h2>
-        <p>This section explains every handle and toggle used to calibrate the tactile engine.</p>
+    </ul>
+    </div>
+    </section>
+    <footer>
+    <p>GT7 Shaker for Linux v1.28</p>
+    <p>Copyright (C) 2026 Soeren Helskov. Licensed under GNU GPL v3.0.</p>
+    </footer>
+    </div>
 
-        <div class="section-card">
-        <h3>General Settings</h3>
-        <ul>
-        <li><strong>PS5 IP Address:</strong> The network address used to find your console.</li>
-        <li><strong>Master Volume:</strong> Main gain slider for overall shaker intensity. Recommended Setting: 90%</li>
-        <li><strong>Screen Awake:</strong> Toggles browser wake lock to prevent display sleep. Please also check phone or tablet settings. This setting will not prevent screenlock if enabled on the unit</li>
-        <li><strong>Light Mode UI:</strong> Changes between light and dark mode</li>
-        <li><strong>Shaker Mode:</strong> Switch between <strong>2 Shakers</strong> (Stereo Front/Rear) or <strong>1 Shaker</strong> (Mono mixdown).</li>
-        <li><strong>Audio Interface & Sample Rate:</strong> Select your soundcard and matching frequency (44.1/48kHz). Matching the hardware rate of your soundcard</li>
-        <li><strong>Hardware Output Test:</strong> "Test Rear" and "Test Front" buttons to verify physical wiring. Buttons only active when shaker engine is stopped</li>
-        </ul>
-        </div>
-
-        <div class="section-card">
-        <h3>Engine RPM Effect</h3>
-        <p>Simulates the high-frequency vibration of a running engine.</p>
-        <ul>
-        <li><strong>Volume & Axle Balance:</strong> Sets the base vibration strength and balances it between front and rear axles. Recommended setting for volume 40%</li>
-        <li><strong>Motor Profile:</strong> Choose between Sine (smooth), V8 (pulses), or Boxer (rhythmic) waveforms.</li>
-        <li><strong>Min/Max Hz:</strong> Defines the frequency range of the engine vibrations. Recommended setting 35 - 100</li>
-        <li><strong>Pit Boost (Idle Force):</strong> Increases shaker intensity when stationary to simulate a heavy idling engine.</li>
-        </ul>
-        </div>
-
-        <div class="section-card">
-        <h3>Suspension Effects</h3>
-        <p>Translates vertical wheel telemetry into physical motion.</p>
-        <ul>
-        <li><strong>Road Vol (Red):</strong> Volume for telemetry-driven road vibration.</li>
-        <li><strong>Impact Vol (Blue):</strong> Volume for suspension thumps (curbs, jumps, crashes).</li>
-        <li><strong>Road Sensitivity Sliders:</strong> Adjusts the "Threshold" for when road noise are triggered. Recommended setting: 0.2</li>
-        <li><strong>Impact Sensitivity Sliders:</strong> Adjusts the "Threshold" for when impact noise are triggere like curbs. Recommended setting: 6</li>
-        <li><strong>Priority suspension over engine effect:</strong> Briefly lowers engine volume during heavy impacts for better tactile clarity.</li>
-        </ul>
-        </div>
-
-        <div class="section-card">
-        <h3>Traction Loss</h3>
-        <p>Monitors tire slip by comparing wheel rotation to vehicle speed.</p>
-        <ul>
-        <li><strong>Volume:</strong> Intensity of the sliding vibration.</li>
-        <li><strong>Slip Threshold:</strong> The sensitivity for when a slide is first detected.</li>
-        <li><strong>Slip Sensitivity:</strong> Controls how quickly the vibration ramps up during a slide.</li>
-        <li><strong>Autocalibration:</strong> Automatically optimizes slip detection for the current car's grip.</li>
-        <li><strong>Front Frequency:</strong> Frequency adjustment for front axele. Recommended setting: 58hz.</li>
-        <li><strong>Rear Frequency:</strong> Frequency adjustment for rear axele. Recommended setting: 35hz</li>
-        </ul>
-        </div>
-
-        <div class="section-card">
-        <h3>Gear Shifts</h3>
-        <p>Mechanical Thump upon gear shift</p>
-        <ul>
-        <li><strong>Function:</strong> Generates a sharp mechanical snap every time a gear change is detected.</li>
-        <li><strong>Volume:</strong> Controls how aggressive the gear shift feels in the seat.</li>
-        </ul>
-        </div>
-
-        <div class="section-card">
-        <h3>Simulated Road Texture</h3>
-        <p>Uses speed-dependent noise to generate artificial tarmac texture.Bumbs and rougness hits frontaxle and then rear width the speed of the car. Calculated on a mid size car</p>
-        <ul>
-        <li><strong>Surface Texture (Vol):</strong> Volume control for surface texture. .</li>
-        <li><strong>Surface Frequency:</strong> Adjusts the pitch (Hz) of the road rumble.</li>
-         <li><strong>Surface Effect (Vol):</strong>Volume control for surface Roughness effects.</li>
-        <li><strong>Surface Roughness:</strong> Adjusts the intensity of simulated cracks and unevenness.</li>
-        </ul>
-        </div>
-
-        </section>
-
-        <footer>
-        <p style="text-align: center; color: #555; font-size: 0.8rem; margin-top: 50px;">
-        &copy; 2026 Soeren Helskov. Licensed under GNU GPL v3.0. Generated for v1.25.
-        </p>
-        </footer>
-
-        </body>
-        </html>
+    </body>
+    </html>

@@ -1,4 +1,4 @@
-# GT7 Shaker for Linux 1.27
+# GT7 Shaker for Linux 1.28
 # Copyright (C) 2026 Soeren Helskov
 # https://github.com/Helskov/GT7-Shaker-for-linux
 #
@@ -14,8 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
-# GT7 Shaker for Linux
-# Copyright (C) 2026 Soeren Helskov
+
+
 
 import time, threading, numpy as np, pyaudio
 from .network_manager import TurismoClient
