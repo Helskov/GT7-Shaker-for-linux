@@ -6,35 +6,21 @@ Project is still under development and bugs is to be expected.
 Project started as personal project as i wanted a solution where is didn't need to boot a windows machine and start software like SimHub and etc. 
 I wanted a solution that could run on linux and on lightweight hardware as my Raspberry Pi 3 build right on to my Rig. 
 
-## 🚀 Core Features
-Real-time Telemetry Decryption: Uses Salsa20 decryption to read the proprietary GT7 UDP stream from the PS5.
+## 🚀 Technical Core Features
 
-Advanced Audio Engine:
+Focusing on the engine's "brain" and performance.
 
-RPM Profiles: Supports Sine wave, V8 (with firing pulses), and Boxer engine profiles for realistic vibration.
-    Pit Boost (New): Automatically detects when the car is stationary ($< 1.0$ km/h) and applies a 25% volume boost to the engine effects, providing a powerful, visceral "idle" feel in the seat while waiting in the pits.
+Low-Latency DSP Engine: A multi-threaded Python engine designed for high update rates to ensure near-instant haptic feedback.
 
-Suspension Haptics: Separate logic for high-frequency road texture and low-frequency impacts/bumps.
-    Road vs. Impact: Separate processing for Road Rumble (Red - 32Hz) and Impacts/Curbs (Blue - 55Hz).
-    Priority Effect (Ducking): When a hard impact (Curb/Sausage) is detected, the constant road vibration is automatically attenuated. This prevents "signal mud" and ensures every curb strike feels sharp and defined.
+UDP Telemetry Decryption: Automated handling of the Salsa20-encrypted data stream directly from the PS5 console.
 
-Dual-Frequency Traction Loss:Haptic Differentiation: Uses distinct frequencies to help the driver identify which end of the car is losing grip
-Autocalibration function to eliminate unnecessary noise during normal run. Can be enabled or disabled from interface.Work only above 40km/t 
-and when have zero throttle and and zero brake applied
-Frequency settings for rear and front axle so you better can feel the Differentiation
+Physics-to-Audio Logic: Advanced algorithms that translate suspension acceleration, tire slip, and engine vibrations into audio signals.
 
-Gear Shifts: Sharp, physical "thumps" triggered during gear changes.
+Speed-Adaptive Axle Delay: Intelligent "bump timing" calculation based on the vehicle's wheelbase and current speed (e.g., bumps hit the front shaker first, then the rear).
 
-Simulated road effects calculated on speed. 
+Cross-Platform Web UI: A responsive Flask-based interface that works seamlessly on desktop and mobile, featuring "Keep Screen Awake" functionality.
 
-Web-Based Dashboard: A mobile-friendly Flask interface for real-time monitoring and tuning.
-
-Hardware Protection: Includes a soft peak limiter and a stagnation detector to prevent damage and unnecessary noise.
-
-Flexible Hardware Support for 1 or 2 shaker setup. 
-Stereo Mode (2 Shakers): Full front-to-rear separation. Experience the curb transition from the front axle to the rear axle in real-time.
-
-Mono Mode (1 Shaker): Intelligent "Downmix" that sums all telemetry channels into a single mono signal, ensuring no data is lost for users with a single-transducer setup.
+Profile Persistence: Save and name up to 4 individual tuning profiles directly to config.json for different car classes or racing styles.
 
 ![Dashboard Interface](src/gt_shaker/assets/Connectionpage.png)
 
@@ -144,13 +130,13 @@ The web interface is designed for ease of use and is divided into two main pages
 * **Auto-calibration**: Toggle functionality to ensure the traction loss effect remains accurate across different car classes.
 
 #### 🕹️ Gear Shift Feedback
-* **Shift Intensity: Dedicated Volume slider for the mechanical gear-change "thump."
-* **Axle Balance: Move the gear shift sensation between Rear and Front transducers to match your rig's physical layout.
+* Shift Intensity: Dedicated Volume slider for the mechanical gear-change "thump."
+* Axle Balance: Move the gear shift sensation between Rear and Front transducers to match your rig's physical layout.
 
 🏗️ Simulated Road Texture
-* **Haptic Surface: Adjustable Surface Texture and Road Effects volume for artificial road vibration.
-* **Roughness Tuning: Slider to change the road feel from Silk Smooth to Bumpy / Cobblestone.
-* **Wheelbase Logic: Advanced Speed-adaptive axle delay (e.g., 2.75m wheelbase logic) that ensures bumps hit the front and rear shakers at the correct timing based on vehicle speed.
+* Haptic Surface: Adjustable Surface Texture and Road Effects volume for artificial road vibration.
+* Roughness Tuning: Slider to change the road feel from Silk Smooth to Bumpy / Cobblestone.
+* Wheelbase Logic: Advanced Speed-adaptive axle delay (e.g., 2.75m wheelbase logic) that ensures bumps hit the front and rear shakers at the correct timing based on vehicle speed.
 ---
 
 <table>
