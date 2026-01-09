@@ -1,4 +1,5 @@
-flask
 numpy
 pyaudio
+flask
+numba
 pycryptodome

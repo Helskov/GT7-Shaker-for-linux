@@ -1,4 +1,4 @@
-# GT7 Shaker for Linux 1.28
+# GT7 Shaker for Linux 1.29
 # Copyright (C) 2026 Soeren Helskov
 # https://github.com/Helskov/GT7-Shaker-for-linux
 #
@@ -16,7 +16,6 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
-
 import time, threading, numpy as np, pyaudio
 from .network_manager import TurismoClient
 from .audio_processor import AudioProcessor
@@ -26,17 +25,21 @@ CHANNELS = 2
 
 class ShakerEngine:
     def __init__(self, cfg):
+        """ Initializes the shaker engine with full state preservation """
         self.cfg = cfg
         self.running = False
-        self.thread_active = False # New guard for thread lifecycle
+        self.thread_active = False
 
         self.chosen_rate = int(self.cfg['audio'].get('sample_rate', 48000))
         self.processor = AudioProcessor(self.chosen_rate)
 
         self.current_data = None
-        self.live_debug = {'road_noise': 0.0, 'g_force': 0.0}
+        self.live_debug = {'road_noise': 0.0, 'g_force': 0.0, 'sim_road': 0.0}
 
-        # Security and stagnation logic
+        # Optimization: Shared triggers for the web API
+        self.last_traction_triggers = (0.0, 0.0)
+
+        # Watchdog and stagnation logic
         self.last_packet_time = 0.0
         self.last_rpm_val = -1.0
         self.last_speed_val = -1.0
@@ -44,17 +47,16 @@ class ShakerEngine:
         self.stagnation_timeout = 1.5
 
     def run(self, target_ip):
+        """ Main engine loop """
         self.thread_active = True
         self.running = True
 
-        # Local PyAudio instance per thread prevents ALSA device locks
         pa = pyaudio.PyAudio()
         stream = None
         self.client = TurismoClient(target_ip)
         self.client.start()
 
         try:
-
             idx = self.cfg['audio'].get('device_index', -1)
 
             stream = pa.open(
@@ -73,7 +75,6 @@ class ShakerEngine:
                 if new_telem is not None:
                     now = time.time()
                     self.last_packet_time = now
-                    time.sleep(0.01)
 
                     # Stagnation detector
                     if abs(new_telem.engine_rpm - self.last_rpm_val) > 0.1 or abs(new_telem.speed_kmh - self.last_speed_val) > 0.1:
@@ -86,26 +87,23 @@ class ShakerEngine:
                 time.sleep(0.01)
 
         except Exception as e:
-            print(f"AUDIO ERROR: {e}")
+            print(f"AUDIO ENGINE ERROR: {e}")
         finally:
-            # Robust cleanup sequence
+            self.running = False
             if stream:
-                try:
-                    stream.stop_stream()
-                    stream.close()
+                try: stream.stop_stream(); stream.close()
                 except: pass
-
-            self.client.stop()
+            if hasattr(self, 'client') and self.client:
+                self.client.stop()
             pa.terminate()
-            self.thread_active = False # Signal that hardware is released
+            self.thread_active = False
 
     def audio_callback(self, in_data, frame_count, time_info, status):
+        """ PyAudio real-time callback """
         now = time.time()
-
-        # Tillad lyd hvis bilen kører ELLER hvis motoren er tændt (vigtigt for Pit Boost)
         is_stagnant = (now - self.last_data_change_time > self.stagnation_timeout)
-
         is_timed_out = (now - self.last_packet_time > 0.5)
+
         mute_condition = not self.running or is_timed_out or is_stagnant
 
         if not self.current_data:
@@ -114,37 +112,11 @@ class ShakerEngine:
         trig_f, trig_r = 0.0, 0.0
         if hasattr(self, 'tire_processor') and self.tire_processor:
             trig_f, trig_r = self.tire_processor.get_traction_triggers(self.current_data)
+            self.last_traction_triggers = (trig_f, trig_r)
 
         ch0, ch1 = self.processor.process(
-            self.current_data,
-            self.cfg,
-            frame_count,
-            self.live_debug,
-            is_muted=mute_condition,
-            traction_triggers=(trig_f, trig_r)
+            self.current_data, self.cfg, frame_count, self.live_debug,
+            is_muted=mute_condition, traction_triggers=(trig_f, trig_r)
         )
 
         return (np.column_stack((ch0, ch1)).flatten().astype(np.float32).tobytes(), pyaudio.paContinue)
-
-def play_test_tone(cfg, side):
-    pa = pyaudio.PyAudio()
-    idx = cfg['audio'].get('device_index', -1)
-    chosen_rate = int(cfg['audio'].get('sample_rate', 48000))
-    master_vol = float(cfg.get('master_volume', 0.5))
-    try:
-        stream = pa.open(format=pyaudio.paFloat32, channels=2, rate=chosen_rate, output=True, output_device_index=None if idx == -1 else idx)
-        steps = np.arange(BUFFER_SIZE)
-        phase = 0.0
-        trigger = 1.0
-        for _ in range(25):
-            tone = np.sin(phase + (steps * 2 * np.pi * 60.0 / chosen_rate)) * (master_vol * 0.95) * trigger
-            phase = (phase + (BUFFER_SIZE * 2 * np.pi * 60.0 / chosen_rate)) % (2 * np.pi)
-
-            out_data = np.column_stack((tone, np.zeros(BUFFER_SIZE, dtype=np.float32))) if side == 0 else np.column_stack((np.zeros(BUFFER_SIZE, dtype=np.float32), tone))
-            stream.write(np.clip(out_data, -0.95, 0.95).astype(np.float32).tobytes())
-            trigger *= 0.90
-
-        stream.stop_stream()
-        stream.close()
-        pa.terminate()
-    except: pass

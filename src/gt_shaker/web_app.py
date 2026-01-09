@@ -1,4 +1,4 @@
-# GT7 Shaker for Linux 1.28
+# GT7 Shaker for Linux 1.29
 # Copyright (C) 2026 Soeren Helskov
 # https://github.com/Helskov/GT7-Shaker-for-linux
 #
@@ -16,12 +16,11 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
-
-
 from flask import Flask, render_template, request, jsonify
 import json, threading, pyaudio, time, copy
-from .main import ShakerEngine, play_test_tone
+from .main import ShakerEngine
 from .tire_processor import process_tires, TireProcessor
+from .audio_utils import play_test_tone
 
 app = Flask(__name__)
 CONFIG_FILE = "config.json"
@@ -106,8 +105,8 @@ engine = None
 # Synkroniser tire_processor ved opstart
 if "traction" in current_config.get("effects", {}):
     t_cfg = current_config["effects"]["traction"]
-    tire_processor.threshold = t_cfg.get("threshold", 0.05)
-    tire_processor.sensitivity = t_cfg.get("sensitivity", 0.15)
+    tire_processor.threshold = float(t_cfg.get("threshold", 0.15))
+    tire_processor.sensitivity = float(t_cfg.get("sensitivity", 0.06))
     tire_processor.use_autocalib = t_cfg.get("use_autocalib", True)
 
 @app.route('/')
