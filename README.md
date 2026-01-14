@@ -40,7 +40,7 @@ Soundcard connected to an amplifier and haptic transducers (e.g., Buttkicker, Da
 
 ### Recommended: Install via pipx
 The easiest way to install and run GT7 Shaker as a standalone application:
-```bash
+    ```bash
     pipx install https://github.com/Helskov/GT7-Shaker-for-linux/releases/download/v1.30/gt7_shaker-1.30-py3-none-any.whl
     
 After installation, simply run gt-shaker from anywhere in your terminal.
