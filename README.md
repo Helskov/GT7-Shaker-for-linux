@@ -1,4 +1,4 @@
-# GT7 Shaker for Linux 1.29
+# GT7 Shaker for Linux 1.30
 GT7 Shaker for Linux is a Python-based telemetry-to-audio converter specifically designed for Gran Turismo 7. It captures real-time physics data from your PS5 or PS4 over the network and translates it into haptic feedback for Bass Shakers using a standard soundcard or hardware like NobSound amplifiers with builtin soundcar functionality
 
 Project is still under development and bugs is to be expected. 
@@ -40,15 +40,15 @@ Soundcard connected to an amplifier and haptic transducers (e.g., Buttkicker, Da
 
 ### Recommended: Install via pipx
 The easiest way to install and run GT7 Shaker as a standalone application:
-    ```bash
-    pipx install https://github.com/Helskov/GT7-Shaker-for-linux/releases/download/v1.27/gt7_shaker-1.27-py3-none-any.whl
+```bash
+    pipx install https://github.com/Helskov/GT7-Shaker-for-linux/releases/download/v1.30/gt7_shaker-1.30-py3-none-any.whl
     
 After installation, simply run gt-shaker from anywhere in your terminal.
 
-Option 2: Install from Source (For Developers)
 
+Option 2: Install from Source (For Developers)
 Start by cloning the project to your local machine:
-bash
+
     git clone https://github.com/Helskov/GT7-Shaker-for-linux.git
     cd GT7-Shaker-for-linux
 
@@ -173,12 +173,15 @@ The project is under active development. Below are the planned features and curr
 
 ## Changes
 
+### v1.30
+* **Increased robustness**: he software now automatically detects and recovers the connection after PS5 sleep mode or long idle periods in menus. No need to manually Stop/Start the engine    anymore – it is now designed for continuous "set-and-forget" operation.
+
 ### v1.29
-* **Massive Performance Boost: Implemented JIT (Just-In-Time) compilation, making audio and physics calculations up to 10x faster while lowering CPU usage.
-* **Enhanced Precision: Refined suspension and tire-slip logic for more detailed and "snappy" haptic feedback.
-* **Modular Architecture: Separated hardware testing from the main engine for a cleaner codebase.
-* **Memory Optimization: Pre-allocated data buffers to reduce background "noise" and stuttering.
-* **Bug Fixes: Resolved an issue where settings could be saved as text instead of numbers, causing crashes.
+* **Massive Performance Boost**: Implemented JIT (Just-In-Time) compilation, making audio and physics calculations up to 10x faster while lowering CPU usage.
+* **Enhanced Precision**: Refined suspension and tire-slip logic for more detailed and "snappy" haptic feedback.
+* **Modular Architecture**: Separated hardware testing from the main engine for a cleaner codebase.
+* **Memory Optimization**: Pre-allocated data buffers to reduce background "noise" and stuttering.
+* **Bug Fixes**: Resolved an issue where settings could be saved as text instead of numbers, causing crashes.
 
 ### v1.28
 * **Added Profiles**: Users can now save and name up to 4 different profiles.
@@ -238,7 +241,6 @@ To run the application correctly, the files must be organized as follows:
         ├── Simulated_Road.py # Road simulation
         ├── tire_processor.py # Tire and traction logic
         ├── web_app.py # Flask web server and dashboard
-        ├── audio_utils.py # Hardware test
         ├── assets/ # Images for UI and README
         └── templates/ # HTML files for the dashboard
             ├── index.html

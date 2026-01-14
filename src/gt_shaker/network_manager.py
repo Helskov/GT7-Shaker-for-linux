@@ -1,4 +1,4 @@
-# GT7 Shaker for Linux 1.29
+# GT7 Shaker for Linux 1.30
 # Copyright (C) 2026 Soeren Helskov
 # https://github.com/Helskov/GT7-Shaker-for-linux
 #
@@ -16,7 +16,6 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
-
 import socket
 import struct
 import threading
@@ -32,18 +31,18 @@ except ImportError:
 
 class GTData:
     def __init__(self, data):
-        # --- LØBS-DATA (Præcis som din fungerende heartbeat_tester.py) ---
-        self.current_lap = struct.unpack('h', data[0x74:0x74 + 2])[0]
-        self.best_lap_ms = struct.unpack('i', data[0x78:0x78 + 4])[0]
-        self.last_lap_ms = struct.unpack('i', data[0x7C:0x7C + 4])[0]
-        self.position = struct.unpack('h', data[0x84:0x84 + 2])[0]
+        # --- LØBS-DATA ---
+        self.current_lap = struct.unpack('<h', data[0x74:0x74 + 2])[0]
+        self.best_lap_ms = struct.unpack('<i', data[0x78:0x78 + 4])[0]
+        self.last_lap_ms = struct.unpack('<i', data[0x7C:0x7C + 4])[0]
+        self.position = struct.unpack('<h', data[0x84:0x84 + 2])[0]
 
-        # --- FLAGS (Pause & Menu kontrol) ---
+        # --- FLAGS ---
         flags = data[0x8E]
         self.in_race = bool(flags & 1)
         self.is_paused = bool(flags & 2)
 
-        # --- ESSENTIEL FYSIK (Bevaret 100% fra din originale kode) ---
+        # --- ESSENTIEL FYSIK ---
         self.vel_y = struct.unpack('<f', data[0x14:0x18])[0]
         self.engine_rpm = struct.unpack('<f', data[0x3C:0x40])[0]
         self.car_shift_rpm = struct.unpack('<H', data[0x88:0x8A])[0]
@@ -54,13 +53,13 @@ class GTData:
         self.brake = (data[0x92] / 255.0) * 100
         self.rev_limiter_active = bool(data[0x93] & 0x20)
 
-        # --- DÆK DATA (Temperaturer - Bevaret) ---
+        # --- DÆK DATA ---
         self.tire_temp_FL = struct.unpack('<f', data[0x60:0x64])[0]
         self.tire_temp_FR = struct.unpack('<f', data[0x64:0x68])[0]
         self.tire_temp_RL = struct.unpack('<f', data[0x68:0x6C])[0]
         self.tire_temp_RR = struct.unpack('<f', data[0x6C:0x70])[0]
 
-        # --- HJUL & AFFJEDRING (Essential for shaker-engine) ---
+        # --- HJUL & AFFJEDRING ---
         self.wheel_speed_FL = abs(struct.unpack('<f', data[0xA4:0xA8])[0])
         self.wheel_speed_FR = abs(struct.unpack('<f', data[0xA8:0xAC])[0])
         self.wheel_speed_RL = abs(struct.unpack('<f', data[0xAC:0xB0])[0])
@@ -81,37 +80,60 @@ class TurismoClient:
     def __init__(self, ip_addr='192.168.1.116'):
         self.ip_addr = ip_addr
         self.ps5_port = 33739
+        self.recv_port = 33740
 
         self.sock_send = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock_recv = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock_recv.settimeout(1.0)
+
+        # FIX 1: Timeout forhindrer at tråden låser sig fast ved baneskift
+        self.sock_recv.settimeout(2.0)
         self.sock_recv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
         try:
-            self.sock_recv.bind(('0.0.0.0', 33740))
-        except: pass
+            self.sock_recv.bind(('0.0.0.0', self.recv_port))
+        except Exception as e:
+            print(f"Socket bind warning: {e}")
+
         self.running = False
         self.telemetry = None
         self.last_packet_time = 0.0
         self.rpm_history = deque(maxlen=20)
 
     def start(self):
-        self.running = True
-        threading.Thread(target=self._run_heartbeat, daemon=True).start()
-        threading.Thread(target=self._run_recv, daemon=True).start()
+        if not self.running:
+            self.running = True
+            threading.Thread(target=self._run_heartbeat, daemon=True).start()
+            threading.Thread(target=self._run_recv, daemon=True).start()
+            print(f"Client started. Target IP: {self.ip_addr}")
 
     def stop(self):
         self.running = False
+        try:
+            self.sock_recv.close()
+            self.sock_send.close()
+        except: pass
 
     def _run_heartbeat(self):
+        """ Robust heartbeat der holder forbindelsen åben """
         while self.running:
             try:
-                # Bruger 'A' heartbeat som virker
+                # Send standard heartbeat ('A')
                 self.sock_send.sendto(b'A', (self.ip_addr, self.ps5_port))
-                time.sleep(1.5)
-            except: time.sleep(1)
+
+                # FIX 2: VÆKKE-LOGIK
+                # Hvis ikke har modtaget data i 5 sekunder (f.eks. lobby/pause),
+                # send et ekstra signal for at holde NAT-tabellen i routeren åben.
+                if time.time() - self.last_packet_time > 5.0:
+                    self.sock_send.sendto(b'A', (self.ip_addr, self.ps5_port))
+
+                time.sleep(1.0)
+            except Exception as e:
+                print(f"Heartbeat error: {e}")
+                time.sleep(1)
 
     def _run_recv(self):
+        """ Modtager-løkke der tåler pauser """
+        print("Receiver thread active")
         while self.running:
             try:
                 data, _ = self.sock_recv.recvfrom(4096)
@@ -129,4 +151,14 @@ class TurismoClient:
                         # RPM Smoothing
                         self.rpm_history.append(self.telemetry.engine_rpm)
                         self.telemetry.engine_rpm = sum(self.rpm_history) / len(self.rpm_history)
-            except: pass
+
+            except socket.timeout:
+                # FIX 3: Håndtering af timeout
+                # Når data stopper (baneskift), lander vi her.
+                # 'continue' får løkken til at starte forfra med det samme,
+                # så den er klar til at modtage data ØJEBLIKKELIGT når de kommer igen.
+                continue
+            except OSError:
+                break
+            except Exception as e:
+                print(f"Recv error: {e}")
