@@ -88,7 +88,7 @@ The web interface is designed for ease of use and is divided into two main pages
 * **High-Visibility Telemetry**: Large, clear displays for **RPM**, **Current Gear**, and **Speed (KM/H)** for instant recognition during high-speed maneuvers.
 * **Race Position & Timing**: Real-time tracking of your **Current Position (POS)** and precise lap timing, including **Last Lap** and **Best Lap** performance metrics.
 * **Live Tire Temperatures**: Individual temperature readouts for all four tires (**FL, FR, RL, RR**) to monitor grip levels and thermal degradation in real-time.
-* **On-the-Fly Profile Selection**: Quick-access buttons for **4 Preset Profiles (P1-P4)**, allowing you to switch between custom tuning setups (e.g., "Formel") instantly without leaving the dashboard.
+* **On-the-Fly Profile Selection**: Quick-access buttons for **4 Preset Profiles (P1-P4)**, allowing you to switch between custom tuning setups (e.g., "Formel") instantly without leaving the dashboard. Or you can have a profile with not effects activated, if you only want Racedashboard. 
 
 ---
 
