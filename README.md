@@ -165,7 +165,7 @@ The project is under active development. Below are the planned features and curr
 
 ## 🛠️ In Progress / Outstanding
 
-* Fix you sometimes have to restart engine when track changes or engine was already on when you started the game. 
+
 
 ## 🚀 Future Features (Planned)
 
