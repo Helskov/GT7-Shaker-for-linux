@@ -165,7 +165,8 @@ The project is under active development. Below are the planned features and curr
 
 ## 🛠️ In Progress / Outstanding
 
-
+Collision impact. 
+Work in progress. Most work done but testing. 
 
 ## 🚀 Future Features (Planned)
 
