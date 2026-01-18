@@ -169,13 +169,10 @@ The project is under active development. Below are the planned features and curr
 
 ## 🛠️ In Progress / Outstanding
 
-<<<<<<< HEAD
-Collision impact. 
-Work in progress. Most work done but testing. 
-=======
+
 Working on Over and understeer. 
 But hard to make work properly because lack of steering input in GT7 telemetry. 
->>>>>>> 9b5b6e8 (Update project to version v1.31)
+
 
 ## 🚀 Future Features (Planned)
 
@@ -186,7 +183,7 @@ But hard to make work properly because lack of steering input in GT7 telemetry.
 ### v1.31
 * **New Collision effect when hitting object like walls and other cars and etc. 
 * **New refined ABS lockup detection with slider for Adjustable slip percentage of the tires
-* **New logic that reads "car on track", "load/processing" and in "In menu" flags from GT7. No more rumble in replays if you do not and middle sequences. Rumbe in replays and be enabled from general settings. 
+* **New logic that reads "car on track", "load/processing" and in "In menu" flags from GT7. No more rumble in replays or loading and etc. Rumble in replays can be enabled from general settings. 
 * **Updated stability and bug fixes. 
 
 
