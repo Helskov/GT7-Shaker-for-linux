@@ -1,4 +1,4 @@
-# GT7 Shaker for Linux 1.30
+# GT7 Shaker for Linux 1.31
 # Copyright (C) 2026 Soeren Helskov
 # https://github.com/Helskov/GT7-Shaker-for-linux
 #

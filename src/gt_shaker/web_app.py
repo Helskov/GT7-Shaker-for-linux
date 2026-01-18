@@ -1,4 +1,4 @@
-# GT7 Shaker for Linux 1.30
+# GT7 Shaker for Linux 1.31
 # Copyright (C) 2026 Soeren Helskov
 # https://github.com/Helskov/GT7-Shaker-for-linux
 #
@@ -21,14 +21,21 @@ import json, threading, pyaudio, time, copy
 from .main import ShakerEngine
 from .tire_processor import process_tires, TireProcessor
 from .audio_utils import play_test_tone
+from werkzeug.serving import WSGIRequestHandler
 
 app = Flask(__name__)
 CONFIG_FILE = "config.json"
 
-# Initialize the tire processor
+# Log filter for telemetry spam
+class NoTelemetryLog(WSGIRequestHandler):
+    def log_request(self, code='-', size='-'):
+        if '/api/telemetry' in self.requestline and str(code) == '200':
+            return
+        super().log_request(code, size)
+
 tire_processor = TireProcessor()
 
-# Standard effekter brugt til profiler og fallback
+# Standard effekter
 default_effects = {
     "rpm": {
         "enabled": True, "volume": 0.25, "pit_boost": 0.80, "balance": 0.5,
@@ -41,10 +48,13 @@ default_effects = {
     },
     "traction": {
         "enabled": True, "threshold": 0.15, "sensitivity": 0.06,
-        "use_autocalib": True, "volume": 0.8, "front_freq": 38.0, "rear_freq": 34.0, "priority": True
+        "use_autocalib": True, "volume": 0.8, "front_freq": 38.0, "rear_freq": 34.0, "priority": True, "abs_offset": 0.09
     },
     "sim_road": {
         "enabled": False, "volume": 0.5, "texture_volume": 0.5, "texture_freq": 30.0, "roughness": 0.3
+    },
+    "obstacle_impact": {
+        "enabled": True, "volume": 1.0, "threshold": 50.0, "freq": 30.0
     }
 }
 
@@ -54,6 +64,7 @@ default_config = {
     "output_headroom": 0.50,
     "shaker_mode": 2,
     "units": "metric",
+    "allow_replays": False,
     "active_profile_id": "1",
     "audio": {"device_index": -1, "sample_rate": 48000},
     "profiles": {
@@ -74,20 +85,17 @@ def load_config():
         with open(CONFIG_FILE, 'r') as f:
             cfg = json.load(f)
 
-            # Sikrer at 'effects' sektionen findes
             if "effects" not in cfg:
-                cfg["effects"] = copy.deepcopy(default_config["effects"]) # Brug deepcopy her
+                cfg["effects"] = copy.deepcopy(default_config["effects"])
 
-            # MIGRATION: Gennemgår alle profiler for at sikre, at de er isolerede
             if "profiles" not in cfg:
-                cfg["profiles"] = copy.deepcopy(default_config["profiles"]) # Brug deepcopy her
+                cfg["profiles"] = copy.deepcopy(default_config["profiles"])
                 cfg["active_profile_id"] = "1"
             else:
                 for p_id in cfg["profiles"]:
-                    # Sørger for at hver profil har sit helt eget unikke 'effects' objekt
                     for eff_name, eff_data in default_config["effects"].items():
                         if eff_name not in cfg["profiles"][p_id]["effects"]:
-                            cfg["profiles"][p_id]["effects"][eff_name] = copy.deepcopy(eff_data) # Brug deepcopy her
+                            cfg["profiles"][p_id]["effects"][eff_name] = copy.deepcopy(eff_data)
                         else:
                             for key, val in eff_data.items():
                                 if key not in cfg["profiles"][p_id]["effects"][eff_name]:
@@ -102,12 +110,12 @@ def load_config():
 current_config = load_config()
 engine = None
 
-# Synkroniser tire_processor ved opstart
 if "traction" in current_config.get("effects", {}):
     t_cfg = current_config["effects"]["traction"]
     tire_processor.threshold = float(t_cfg.get("threshold", 0.15))
     tire_processor.sensitivity = float(t_cfg.get("sensitivity", 0.06))
     tire_processor.use_autocalib = t_cfg.get("use_autocalib", True)
+    tire_processor.abs_offset = float(t_cfg.get("abs_offset", 0.09))
 
 @app.route('/')
 def index():
@@ -142,7 +150,12 @@ def get_telemetry():
             is_at_limit = (d.car_max_rpm > 0 and d.engine_rpm >= red_start) or bool(d.rev_limiter_active)
             is_shift_point = (d.engine_rpm >= d.car_shift_rpm - 100 and d.engine_rpm < red_start - 100) and not is_at_limit
 
-            trig_f, trig_r = tire_processor.get_traction_triggers(d)
+            tc_f, tc_r, abs_f, abs_r = tire_processor.get_traction_triggers(d)
+
+
+            trig_f = max(tc_f, abs_f)
+            trig_r = max(tc_r, abs_r)
+
             if not current_config['effects']['traction'].get('enabled', True):
                 trig_f, trig_r = 0.0, 0.0
 
@@ -164,38 +177,35 @@ def get_telemetry():
 
 @app.route('/api/update', methods=['POST'])
 def update_settings():
-    """ Sammensmeltet funktion: Gemmer både live og i den aktive profil """
     data = request.json
     p_id = current_config.get('active_profile_id', '1')
     try:
-        # Globale indstillinger
         current_config['master_volume'] = float(data.get('master_volume', current_config['master_volume']))
         current_config['output_headroom'] = float(data.get('output_headroom', current_config.get('output_headroom', 0.45)))
         current_config['ps5_ip'] = data.get('ps5_ip', current_config['ps5_ip'])
         current_config['units'] = data.get('units', current_config.get('units', 'metric'))
         current_config['shaker_mode'] = int(data.get('shaker_mode', current_config.get('shaker_mode', 2)))
+        current_config['allow_replays'] = bool(data.get('allow_replays', current_config.get('allow_replays', False)))
 
         if 'audio' in data:
             current_config['audio']['device_index'] = int(data['audio'].get('device_index', -1))
             current_config['audio']['sample_rate'] = int(data['audio'].get('sample_rate', 48000))
 
-
-        for effect in ['rpm', 'suspension', 'gear_shift', 'traction', 'sim_road']:
+        # HER VAR FEJLEN: 'obstacle_impact' manglede i denne liste!
+        for effect in ['rpm', 'suspension', 'gear_shift', 'traction', 'sim_road', 'obstacle_impact']:
             if effect in data:
                 for key, val in data[effect].items():
-                    # Numerisk tjek (vigtigt for sliders)
                     if isinstance(val, str) and (val.replace('.','',1).isdigit() or (val.startswith('-') and val[1:].replace('.','',1).isdigit())):
                         val = float(val)
-
-                    # Gem i aktiv kørsel OG i profil-arkiv
                     current_config['effects'][effect][key] = val
                     current_config['profiles'][p_id]['effects'][effect][key] = val
 
-        # Live opdatering af tire_processor
         if 'traction' in data:
             t_data = data['traction']
             if 'threshold' in t_data: tire_processor.threshold = float(t_data['threshold'])
             if 'sensitivity' in t_data: tire_processor.sensitivity = float(t_data['sensitivity'])
+            if 'abs_offset' in t_data: tire_processor.abs_offset = float(t_data['abs_offset'])
+            if 'use_autocalib' in t_data: tire_processor.use_autocalib = bool(t_data['use_autocalib'])
 
         save_config(current_config)
         if engine: engine.cfg = current_config
@@ -226,7 +236,6 @@ def select_profile():
     p_id = str(request.json.get('id'))
     if p_id in current_config['profiles']:
         current_config['active_profile_id'] = p_id
-        # BRUG DEEPCOPY HER OGSÅ!
         current_config['effects'] = copy.deepcopy(current_config['profiles'][p_id]['effects'])
         save_config(current_config)
         if engine: engine.cfg = current_config
@@ -251,6 +260,7 @@ def test_shaker():
 @app.route('/manual')
 def manual(): return render_template('manual.html')
 
-def main(): app.run(host='0.0.0.0', port=5000)
+def main():
+    app.run(host='0.0.0.0', port=5000, request_handler=NoTelemetryLog)
 
 if __name__ == '__main__': main()

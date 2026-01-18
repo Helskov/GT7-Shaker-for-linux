@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GT7 Shaker for linux v1.30</title>
+<title>GT7 Shaker for linux v1.31</title>
 
 <style>
 /* --- COLOR PALETTE AND CSS VARIABLES --- */
@@ -311,7 +311,13 @@ input:checked + .slider:before { transform: translateX(20px); }
     <span class="slider"></span>
     </label>
     </div>
-
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+    <label>Active during Replays</label>
+    <label class="switch">
+    <input type="checkbox" id="allowReplays" {% if config.allow_replays %}checked{% endif %} onchange="sendUpdate()">
+    <span class="slider"></span>
+    </label>
+    </div>
     <label style="margin-top:10px;">Measurement Units</label>
     <select id="units" onchange="sendUpdate()">
     <option value="metric" {% if config.units == 'metric' %}selected{% endif %}>Metric (km/h / °C)</option>
@@ -415,6 +421,15 @@ input:checked + .slider:before { transform: translateX(20px); }
         <div style="margin-top:10px; display:flex; justify-content:space-between;"><label>Slip Sensitivity (Ramp-up)</label><span id="traction_sens_val" class="val-label">{{ config.effects.traction.sensitivity }}</span></div>
         <div class="help-labels"><span>0.05 (Aggressive)</span><span>0.50 (Smooth)</span></div>
         <input type="range" id="traction_sens" min="0.05" max="0.50" step="0.01" value="{{ config.effects.traction.sensitivity }}" oninput="document.getElementById('traction_sens_val').innerText=this.value" onchange="sendUpdate()">
+        <div style="margin-top:10px; display:flex; justify-content:space-between;">
+        <label>ABS Offset (Brake Tolerance)</label>
+        <span id="traction_abs_disp" class="val-label">{{ config.effects.traction.abs_offset }}</span>
+        </div>
+        <div class="help-labels"><span>0.00 (Raw)</span><span>0.20 (Weak ABS)</span></div>
+        <input type="range" id="traction_abs_offset" min="0.00" max="0.20" step="0.01"
+        value="{{ config.effects.traction.abs_offset }}"
+        oninput="document.getElementById('traction_abs_disp').innerText=this.value"
+        onchange="sendUpdate()">
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;"><label>Autocalibration</label><label class="switch"><input type="checkbox" id="traction_calib" {% if config.effects.traction.use_autocalib %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></div>
 
@@ -459,6 +474,28 @@ input:checked + .slider:before { transform: translateX(20px); }
     <div class="help-labels"><span>Silk Smooth</span><span>Bumpy / Cobblestone</span></div>
     <input type="range" id="road_sim_rough" min="0.0" max="1.0" step="0.01" value="{{ config.effects.sim_road.roughness }}" oninput="document.getElementById('road_rough_val').innerText=this.value" onchange="sendUpdate()">
     <p style="color:#666; font-size:0.65rem; margin-top:10px; text-align:center;">Speed-adaptive axle delay (2.75m wheelbase logic applied).</p>
+    </div>
+    <div class="card">
+    <h2>Collision Impact <span><label class="switch"><input type="checkbox" id="obs_enabled" {% if config.effects.obstacle_impact.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></span></h2>
+
+    <div style="display:flex; justify-content:space-between;">
+    <label>Volume</label>
+    <span id="obs_vol_disp" class="val-label">{{ (config.effects.obstacle_impact.volume|float * 100)|int }}%</span>
+    </div>
+    <input type="range" id="obs_vol" min="0" max="1.0" step="0.1" value="{{ config.effects.obstacle_impact.volume }}"
+    oninput="document.getElementById('obs_vol_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
+
+    <div style="display:flex; justify-content:space-between; margin-top:10px;">
+    <label>Sensitivity</label>
+    <span id="obs_thresh_disp" class="val-label">{{ config.effects.obstacle_impact.threshold }}</span>
+    </div>
+    <input type="range" id="obs_thresh" min="10.0" max="200.0" step="5.0" value="{{ config.effects.obstacle_impact.threshold }}"
+    oninput="document.getElementById('obs_thresh_disp').innerText=this.value" onchange="sendUpdate()">
+    <div style="display:flex; justify-content:space-between; margin-top:10px;"><label>Impact Tone (Hz)</label><span id="obs_freq_disp" class="val-label">{{ config.effects.obstacle_impact.freq }} Hz</span></div>
+    <input type="range" id="obs_freq" min="25" max="60" step="1" value="{{ config.effects.obstacle_impact.get('freq', 30) }}" oninput="document.getElementById('obs_freq_disp').innerText=this.value+' Hz'" onchange="sendUpdate()">
+
+    <p style="color:#666; font-size:0.65rem;">Triggers heavy thumps on front/rear collisions based on G-spikes.</p>
+    </div>
     </div>
     </div>
     </div>
@@ -534,6 +571,7 @@ input:checked + .slider:before { transform: translateX(20px); }
                     output_headroom: document.getElementById('output_headroom').value,
                     units: document.getElementById('units').value,
                     shaker_mode: parseInt(document.getElementById('shaker_mode').value),
+                    allow_replays: document.getElementById('allowReplays').checked,
                     audio: {
                         device_index: parseInt(document.getElementById('audio_device').value),
                         sample_rate: parseInt(document.getElementById('sample_rate').value)
@@ -561,6 +599,7 @@ input:checked + .slider:before { transform: translateX(20px); }
                         volume: document.getElementById('traction_vol').value,
                         threshold: document.getElementById('traction_thresh').value,
                         sensitivity: document.getElementById('traction_sens').value,
+                        abs_offset: document.getElementById('traction_abs_offset').value,
                         use_autocalib: document.getElementById('traction_calib').checked,
                         front_freq: document.getElementById('traction_front_freq').value,
                         rear_freq: document.getElementById('traction_rear_freq').value,
@@ -577,6 +616,12 @@ input:checked + .slider:before { transform: translateX(20px); }
                         texture_freq: document.getElementById('road_texture_freq').value,
                         volume: document.getElementById('road_sim_vol').value,
                         roughness: document.getElementById('road_sim_rough').value
+                        },
+                    obstacle_impact: {
+                        enabled: document.getElementById('obs_enabled').checked,
+                        volume: document.getElementById('obs_vol').value,
+                        threshold: document.getElementById('obs_thresh').value,
+                        freq: document.getElementById('obs_freq').value
                         }
                     };
                     await fetch('/api/update', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
@@ -661,6 +706,8 @@ input:checked + .slider:before { transform: translateX(20px); }
                                 document.getElementById('traction_thresh_val').innerText = effects.traction.threshold;
                                 document.getElementById('traction_sens').value = effects.traction.sensitivity;
                                 document.getElementById('traction_sens_val').innerText = effects.traction.sensitivity;
+                                document.getElementById('traction_abs_offset').value = effects.traction.abs_offset || 0.09;
+                                document.getElementById('traction_abs_disp').innerText = effects.traction.abs_offset || 0.09;
                                 document.getElementById('traction_calib').checked = effects.traction.use_autocalib;
                                 document.getElementById('traction_front_freq').value = effects.traction.front_freq;
                                 document.getElementById('traction_front_freq_disp').innerText = effects.traction.front_freq + ' Hz';
@@ -684,6 +731,26 @@ input:checked + .slider:before { transform: translateX(20px); }
                                 document.getElementById('road_sim_vol_disp').innerText = Math.round(effects.sim_road.volume * 100) + '%';
                                 document.getElementById('road_sim_rough').value = effects.sim_road.roughness;
                                 document.getElementById('road_rough_val').innerText = effects.sim_road.roughness;
+                                // --- Obstacle Impact ---
+                                if (effects.obstacle_impact) {
+                                    // RETTELSE: Tilføjet 'd' i 'obs_enabled'
+                                    document.getElementById('obs_enabled').checked = effects.obstacle_impact.enabled;
+
+                                    // Volumen
+                                    const obsVol = effects.obstacle_impact.volume;
+                                    document.getElementById('obs_vol').value = obsVol;
+                                    document.getElementById('obs_vol_disp').innerText = Math.round(obsVol * 100) + '%';
+
+                                    // Sensitivity (Threshold)
+                                    const obsThresh = effects.obstacle_impact.threshold;
+                                    document.getElementById('obs_thresh').value = obsThresh;
+                                    document.getElementById('obs_thresh_disp').innerText = obsThresh;
+
+                                    // Frequency (Hz)
+                                    const obsFreq = effects.obstacle_impact.freq || 30;
+                                    document.getElementById('obs_freq').value = obsFreq;
+                                    document.getElementById('obs_freq_disp').innerText = obsFreq + ' Hz';
+                                    }
                                 }
                     /* --- TELEMETRY POLLING LOOP (10Hz) --- */
                     setInterval(async () => {

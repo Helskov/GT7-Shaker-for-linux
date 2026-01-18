@@ -1,4 +1,4 @@
-# GT7 Shaker for Linux 1.30
+# GT7 Shaker for Linux 1.31
 GT7 Shaker for Linux is a Python-based telemetry-to-audio converter specifically designed for Gran Turismo 7. It captures real-time physics data from your PS5 or PS4 over the network and translates it into haptic feedback for Bass Shakers using a standard soundcard or hardware like NobSound amplifiers with builtin soundcar functionality
 
 Project is still under development and bugs is to be expected. 
@@ -137,6 +137,10 @@ The web interface is designed for ease of use and is divided into two main pages
 * Haptic Surface: Adjustable Surface Texture and Road Effects volume for artificial road vibration.
 * Roughness Tuning: Slider to change the road feel from Silk Smooth to Bumpy / Cobblestone.
 * Wheelbase Logic: Advanced Speed-adaptive axle delay (e.g., 2.75m wheelbase logic) that ensures bumps hit the front and rear shakers at the correct timing based on vehicle speed.
+
+🏗️ Colliosion impact effect
+* Haptic collision effect: Feel when you hit someone or something. 
+* Sensitivity: Slider to adjust Sensitivity of the G-forces
 ---
 
 <table>
@@ -165,14 +169,26 @@ The project is under active development. Below are the planned features and curr
 
 ## 🛠️ In Progress / Outstanding
 
+<<<<<<< HEAD
 Collision impact. 
 Work in progress. Most work done but testing. 
+=======
+Working on Over and understeer. 
+But hard to make work properly because lack of steering input in GT7 telemetry. 
+>>>>>>> 9b5b6e8 (Update project to version v1.31)
 
 ## 🚀 Future Features (Planned)
 
 * Support for Wind simulator
 
 ## Changes
+
+### v1.31
+* **New Collision effect when hitting object like walls and other cars and etc. 
+* **New refined ABS lockup detection with slider for Adjustable slip percentage of the tires
+* **New logic that reads "car on track", "load/processing" and in "In menu" flags from GT7. No more rumble in replays if you do not and middle sequences. Rumbe in replays and be enabled from general settings. 
+* **Updated stability and bug fixes. 
+
 
 ### v1.30
 * **Increased robustness**: he software now automatically detects and recovers the connection after PS5 sleep mode or long idle periods in menus. No need to manually Stop/Start the engine    anymore – it is now designed for continuous "set-and-forget" operation.
