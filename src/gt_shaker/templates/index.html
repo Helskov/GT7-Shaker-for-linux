@@ -231,7 +231,7 @@
     </div>
     <div class="footer-text">
     Copyright (C) 2026 Soeren Helskov<br>
-    Version 1.4
+    Version 1.41
     </div>
     </div> ```
 
@@ -377,9 +377,13 @@
     <div class="help-row"><span>Rear (Left)</span><span>Front (Right)</span></div>
     <input type="range" id="gear_bal" min="0" max="1" step="0.01" value="{{ config.effects.gear_shift.balance }}" oninput="updateVal('gear_bal_disp', this.value, '%')" onchange="sendUpdate()">
     </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Gear Shift Decay</span><span class="label-value" id="gear_shift_decay_val">{{ config.effects.gear_shift.decay }}</span></div>
+    <div class="help-row"><span>Long (1.0)</span><span>Short (15.0)</span></div>
+    <input type="range" id="gear_shift_decay" min="1.0" max="15.0" step="0.5" value="{{ config.effects.gear_shift.decay }}" oninput="updateVal('gear_shift_decay_val', this.value, '')" onchange="sendUpdate()">
     </div>
     </div>
-
+    </div>
     <div id="tab-traction" class="settings-content" style="display:none;">
     <div class="md-card">
     <div class="section-header">
@@ -750,7 +754,7 @@
                 allow_replays: getCheck('allowReplays'),
                 audio: { device_index: parseInt(getVal('audio_device')), sample_rate: parseInt(getVal('sample_rate')) },
                 rpm: { enabled: getCheck('rpm_enabled'), volume: getVal('rpm_vol'), balance: getVal('rpm_bal'), profile: getVal('rpm_profile'), min_freq: getVal('rpm_min'), max_freq: getVal('rpm_max'), pit_boost: getVal('rpm_pit_boost') },
-                gear_shift: { enabled: getCheck('gear_enabled'), volume: getVal('gear_vol'), balance: getVal('gear_bal') },
+                gear_shift: { enabled: getCheck('gear_enabled'), volume: getVal('gear_vol'), balance: getVal('gear_bal'), decay: getVal('gear_shift_decay') },
                 traction: { enabled: getCheck('traction_enabled'), volume: getVal('traction_vol'), balance: getVal('traction_bal'), threshold: getVal('traction_thresh'), sensitivity: getVal('traction_sens'), abs_offset: getVal('traction_abs_offset'), use_autocalib: getCheck('traction_calib'), front_freq: getVal('traction_front_freq'), rear_freq: getVal('traction_rear_freq'), priority: getCheck('traction_priority') },
                 suspension: { enabled: getCheck('susp_enabled'), road_volume: getVal('susp_road_vol'), impact_volume: getVal('susp_impact_vol'), threshold: getVal('susp_thresh'), impact_threshold: getVal('susp_impact_thresh'), balance: getVal('susp_bal'), priority: getCheck('susp_priority') },
                 sim_road: { enabled: getCheck('road_sim_enabled'), texture_volume: getVal('road_texture_vol'), texture_freq: getVal('road_texture_freq'), volume: getVal('road_sim_vol'), roughness: getVal('road_sim_rough') },
@@ -805,7 +809,8 @@
                         setCheck('traction_calib', ef.traction.use_autocalib); setVal('traction_front_freq', ef.traction.front_freq, 'traction_front_freq_disp', ' Hz'); setVal('traction_rear_freq', ef.traction.rear_freq, 'traction_rear_freq_disp', ' Hz'); setCheck('traction_priority', ef.traction.priority);
 
                         // Gear
-                        setCheck('gear_enabled', ef.gear_shift.enabled); setVal('gear_vol', ef.gear_shift.volume, 'gear_vol_disp', '%'); setVal('gear_bal', ef.gear_shift.balance, 'gear_bal_disp', '%');
+
+                        setCheck('gear_enabled', ef.gear_shift.enabled); setVal('gear_vol', ef.gear_shift.volume, 'gear_vol_disp', '%'); setVal('gear_bal', ef.gear_shift.balance, 'gear_bal_disp', '%'); setVal('gear_shift_decay', ef.gear_shift.decay, 'gear_shift_decay_val', '');
 
                         // Sim Road
                         setCheck('road_sim_enabled', ef.sim_road.enabled); setVal('road_texture_vol', ef.sim_road.texture_volume, 'road_texture_vol_disp', '%'); setVal('road_texture_freq', ef.sim_road.texture_freq, 'road_texture_freq_disp', ' Hz');

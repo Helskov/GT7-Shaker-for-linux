@@ -1,4 +1,4 @@
-# GT7 Shaker for Linux 1.4
+# GT7 Shaker for Linux 1.41
 GT7 Shaker for Linux is a Python-based telemetry-to-audio converter specifically designed for Gran Turismo 7. It captures real-time physics data from your PS5 or PS4 over the network and translates it into haptic feedback for Bass Shakers using a standard soundcard or hardware like NobSound amplifiers with builtin soundcar functionality
 
 Project is still under development and bugs is to be expected. 
@@ -41,7 +41,7 @@ Soundcard connected to an amplifier and haptic transducers (e.g., Buttkicker, Da
 ### Recommended: Install via pipx
 The easiest way to install and run GT7 Shaker as a standalone application:
     ```bash
-    pipx install https://github.com/Helskov/GT7-Shaker-for-linux/releases/download/1.4/gt7_shaker-1.4-py3-none-any.whl
+    pipx install https://github.com/Helskov/GT7-Shaker-for-linux/releases/download/1.41/gt7_shaker-1.41-py3-none-any.whl
     
 After installation, simply run gt-shaker from anywhere in your terminal.
 
@@ -171,6 +171,11 @@ But hard to make work properly because lack of steering input in GT7 telemetry.
 * Support for Wind simulator
 
 ## Changes
+
+### v1.41
+* **Bug fixing master volume not working properly
+* **implemented decay slider for gear shift
+* **Corrected Mono and Swap channels not correct implemented after overhaul
 
 ### v1.4
 

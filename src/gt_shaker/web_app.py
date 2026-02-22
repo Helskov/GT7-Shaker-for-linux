@@ -1,4 +1,4 @@
-# GT7 Shaker for Linux 1.4
+# GT7 Shaker for Linux 1.41
 # Copyright (C) 2026 Soeren Helskov
 # https://github.com/Helskov/GT7-Shaker-for-linux
 #
@@ -40,7 +40,7 @@ default_effects = {
         "enabled": True, "volume": 0.25, "pit_boost": 0.80, "balance": 0.5,
         "min_freq": 25.0, "max_freq": 60.0, "profile": "v8"
     },
-    "gear_shift": {"enabled": True, "volume": 1.0, "balance": 0.5},
+    "gear_shift": {"enabled": True, "volume": 1.0, "balance": 0.5, "decay": 5.0},
     "suspension": {
         "enabled": True, "balance": 0.5, "threshold": 0.27, "impact_threshold": 35.0,
         "road_volume": 1.0, "impact_volume": 1.0, "priority": True, "rpm_dim": 0.5
@@ -277,6 +277,7 @@ def update_settings():
         current_config['units'] = data.get('units', current_config.get('units', 'metric'))
         current_config['shaker_mode'] = int(data.get('shaker_mode', current_config.get('shaker_mode', 2)))
         current_config['allow_replays'] = bool(data.get('allow_replays', current_config.get('allow_replays', False)))
+        current_config['swap_channels'] = bool(data.get('swap_channels', current_config.get('swap_channels', False)))
 
         if 'audio' in data:
             current_config['audio']['device_index'] = int(data['audio'].get('device_index', -1))

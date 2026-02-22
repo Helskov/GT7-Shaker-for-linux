@@ -1,4 +1,4 @@
-# GT7 Shaker for Linux 1.4
+# GT7 Shaker for Linux 1.41
 # Copyright (C) 2026 Soeren Helskov
 # https://github.com/Helskov/GT7-Shaker-for-linux
 #
@@ -100,7 +100,7 @@ class AudioProcessor:
         if not data and self.current_gain == 0: return mix_ch0, mix_ch1
 
         headroom = float(cfg.get('output_headroom', 0.45))
-        safe_gain = float(cfg.get('master_volume', 0.5)) * headroom
+        safe_gain = (float(cfg.get('master_volume', 0.5)) ** 2) * headroom
 
         # ==========================================================
         # 1. HIERARKI BEREGNING (Priority Logic)
@@ -263,7 +263,7 @@ class AudioProcessor:
             self.bump_phase = (self.bump_phase + (frame_count * b_step)) % (2 * np.pi)
             gR_gear, gF_gear = self.get_stereo_gain(cfg['effects']['gear_shift'].get('balance', 0.5))
             mix_ch0 += b_wave * gR_gear; mix_ch1 += b_wave * gF_gear
-            self.bump_trigger = max(0, self.bump_trigger - 0.15)
+            self.bump_trigger = max(0.0, self.bump_trigger - (float(cfg['effects']['gear_shift'].get('decay', 5.0)) * 0.03))
 
         # --- TRACTION / ABS (Ingen ducking - den er kongen) ---
         if trac_cfg.get('enabled', True):
@@ -291,5 +291,18 @@ class AudioProcessor:
                 self.traction_phase_f = (self.traction_phase_f + (frame_count * sf)) % (2 * np.pi)
 
         self.last_gear = data.gear
+
+        # --- FINAL CHANNEL CONFIGURATION ---
+        # 1. Shaker Mode (1 = Mono/Mixed)
+        if cfg.get('shaker_mode') == 1:
+            # Mix ch0 and ch1 to mono (using 0.707 to maintain perceived volume)
+            mono_mix = (mix_ch0 + mix_ch1) * 0.707
+            mix_ch0 = mono_mix
+            mix_ch1 = mono_mix
+
+        # 2. Swap Channels (Left/Right)
+        if cfg.get('swap_channels', False):
+            mix_ch0, mix_ch1 = mix_ch1, mix_ch0
+
         mix_ch0, mix_ch1 = jit_limiter(mix_ch0, mix_ch1, 0.85)
         return np.clip(mix_ch0 * gain_envelope, -0.98, 0.98), np.clip(mix_ch1 * gain_envelope, -0.98, 0.98)
