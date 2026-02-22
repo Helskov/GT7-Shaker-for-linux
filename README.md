@@ -85,7 +85,7 @@ The web interface is designed for ease of use and is divided into a welcome scre
 ### 🏎️ Race Dashboard
 *Optimized for focus on essential race data.*
 
-![Race Dashboard Screenshot](racedash.png)
+![Dashboard Interface](src/gt_shaker/assets/RaceDash.png)
 
 * **High-Visibility Telemetry**: Large, clear displays for the **RPM bar**, **Current Gear**, and **Speed** (KM/H or MPH) for instant recognition during high-speed maneuvers.
 * **Lap Timing & Fuel Management**: Real-time tracking of your **Current Lap** and precise lap timing, including **Last Lap** (with a visual pace trend arrow) and **Best Lap** performance metrics. The bottom panel keeps you updated on crucial endurance stats: **Fuel Level**, **Tank %**, and **Laps Remaining**.
@@ -97,7 +97,7 @@ The web interface is designed for ease of use and is divided into a welcome scre
 ### 📊 Telemetry Dashboard
 *Focuses on real-time data visualization and input analysis while driving.*
 
-![Telemetry Dashboard](Racedash_1.png)
+![Dashboard Interface](src/gt_shaker/assets/RaceDash_1.png)
 
 * **Live Input Graph**: A real-time scrolling chart analyzing your exact pedal inputs, featuring **Gas (Green)**, **Brake (Red)**, and **ABS/TC (Yellow)** trigger activity. Perfect for analyzing braking points, throttle control, and traction loss.
 * **Essential Telemetry**: Clear, central readouts for **Current Gear**, the **RPM bar**, and **Speed**, allowing you to monitor core car behavior while analyzing the telemetry graph.
@@ -146,20 +146,10 @@ The web interface is designed for ease of use and is divided into a welcome scre
 * **Base Temp (Ideal Middle):** Slider to set the perfect operating temperature for your current tire compound.
 * **Window Spread:** Slider to define how wide your optimal (green) temperature zone is, before the tires are considered too cold (blue) or overheating (red).
 
-![Tire Temp Config](tiretemp.png)
+![Tire Temp config Interface](src/gt_shaker/assets/tiretemp.png)
 
 ---
 
-<table>
-<tr>
-<td><b>Page 1: Telemetry</b></td>
-<td><b>Page 2: Shaker Tuning</b></td>
-</tr>
-<tr>
-<td><img src="src/gt_shaker/assets/SettingsPage1_2.png" width="400"></td>
-<td><img src="src/gt_shaker/assets/SettingsPage2_2.png" width="400"></td>
-</tr>
-</table>
 
 ## 🗺️ Roadmap & Future Plans
 The project is under active development. Below are the planned features and current "to-do" items:
