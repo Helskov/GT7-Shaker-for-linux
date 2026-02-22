@@ -1,4 +1,4 @@
-# GT7 Shaker for Linux 1.31
+# GT7 Shaker for Linux 1.4
 # Copyright (C) 2026 Soeren Helskov
 # https://github.com/Helskov/GT7-Shaker-for-linux
 #
@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
+
 
 
 import socket
@@ -87,6 +88,10 @@ class GTData:
         self.suspension_height_FR = struct.unpack('<f', data[0xC8:0xCC])[0]
         self.suspension_height_RL = struct.unpack('<f', data[0xCC:0xD0])[0]
         self.suspension_height_RR = struct.unpack('<f', data[0xD0:0xD4])[0]
+
+        # --- BENZIN DATA ---
+        self.max_fuel = struct.unpack('<f', data[0x44:0x48])[0]
+        self.current_fuel = struct.unpack('<f', data[0x48:0x4C])[0]
 
 
 class TurismoClient:

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gt7-shaker"
-version = "1.31"
+version = "1.4"
 authors = [{name = "Soeren Helskov"}]
 description = "GT7 Telemetry to Bass Shaker converter for Linux"
 readme = "README.md"
@@ -25,4 +25,4 @@ gt-shaker = "gt_shaker.web_app:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-gt_shaker = ["templates/*", "assets/*"]
+gt_shaker = ["templates/*", "templates/fonts/*", "assets/*", "images/*"]

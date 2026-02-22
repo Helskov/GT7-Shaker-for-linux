@@ -1,4 +1,4 @@
-# GT7 Shaker for Linux 1.31
+# GT7 Shaker for Linux 1.4
 # Copyright (C) 2026 Soeren Helskov
 # https://github.com/Helskov/GT7-Shaker-for-linux
 #
@@ -15,9 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-
-from flask import Flask, render_template, request, jsonify
-import json, threading, pyaudio, time, copy
+from flask import Flask, render_template, request, jsonify, send_from_directory
+import json, threading, pyaudio, time, copy, os
 from .main import ShakerEngine
 from .tire_processor import process_tires, TireProcessor
 from .audio_utils import play_test_tone
@@ -55,6 +54,9 @@ default_effects = {
     },
     "obstacle_impact": {
         "enabled": True, "volume": 1.0, "threshold": 50.0, "freq": 30.0
+    },
+    "tire_temp": {
+        "enabled": True, "base": 72.0, "spread": 12.0
     }
 }
 
@@ -77,39 +79,54 @@ default_config = {
 }
 
 def save_config(cfg):
-    with open(CONFIG_FILE, 'w') as f:
-        json.dump(cfg, f, indent=4)
+    try:
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(cfg, f, indent=4)
+    except Exception as e:
+        print(f"Error saving config: {e}")
 
 def load_config():
     try:
+        if not os.path.exists(CONFIG_FILE):
+            print("Config file not found, creating defaults.")
+            save_config(default_config)
+            return copy.deepcopy(default_config)
+
         with open(CONFIG_FILE, 'r') as f:
             cfg = json.load(f)
 
-            if "effects" not in cfg:
-                cfg["effects"] = copy.deepcopy(default_config["effects"])
+        # Sikring mod manglende felter (Migration logic)
+        if "effects" not in cfg: cfg["effects"] = copy.deepcopy(default_config["effects"])
 
-            if "profiles" not in cfg:
-                cfg["profiles"] = copy.deepcopy(default_config["profiles"])
-                cfg["active_profile_id"] = "1"
-            else:
-                for p_id in cfg["profiles"]:
-                    for eff_name, eff_data in default_config["effects"].items():
-                        if eff_name not in cfg["profiles"][p_id]["effects"]:
-                            cfg["profiles"][p_id]["effects"][eff_name] = copy.deepcopy(eff_data)
-                        else:
-                            for key, val in eff_data.items():
-                                if key not in cfg["profiles"][p_id]["effects"][eff_name]:
-                                    cfg["profiles"][p_id]["effects"][eff_name][key] = val
+        # Tjek for manglende effekter (som tire_temp)
+        for eff_key, eff_val in default_config["effects"].items():
+            if eff_key not in cfg["effects"]:
+                cfg["effects"][eff_key] = copy.deepcopy(eff_val)
 
-            if "units" not in cfg: cfg["units"] = "metric"
-            return cfg
+        if "profiles" not in cfg:
+            cfg["profiles"] = copy.deepcopy(default_config["profiles"])
+            cfg["active_profile_id"] = "1"
+        else:
+            # Tjek profiler for manglende felter
+            for p_id in cfg["profiles"]:
+                if "effects" not in cfg["profiles"][p_id]:
+                    cfg["profiles"][p_id]["effects"] = copy.deepcopy(default_config["effects"])
+
+                for eff_key, eff_val in default_config["effects"].items():
+                    if eff_key not in cfg["profiles"][p_id]["effects"]:
+                        cfg["profiles"][p_id]["effects"][eff_key] = copy.deepcopy(eff_val)
+
+        if "units" not in cfg: cfg["units"] = "metric"
+        return cfg
     except Exception as e:
-        print(f"Config load error: {e}")
+        print(f"Config load error: {e}. Using defaults.")
         return copy.deepcopy(default_config)
 
+# --- 1. INITIALIZE CONFIG ---
 current_config = load_config()
 engine = None
 
+# --- 2. SETUP TIRE PROCESSOR ---
 if "traction" in current_config.get("effects", {}):
     t_cfg = current_config["effects"]["traction"]
     tire_processor.threshold = float(t_cfg.get("threshold", 0.15))
@@ -117,16 +134,55 @@ if "traction" in current_config.get("effects", {}):
     tire_processor.use_autocalib = t_cfg.get("use_autocalib", True)
     tire_processor.abs_offset = float(t_cfg.get("abs_offset", 0.09))
 
+# --- 3. STATE VARIABLES ---
+lap_state = {
+    'last_ms': -1,
+    'trend': 0
+}
+fuel_state = {
+    'last_lap_num': -1,
+    'fuel_at_lap_start': -1.0,
+    'avg_consumption': 0.0,
+    'laps_remaining': 0.0
+}
+
+# --- ROUTES ---
+
 @app.route('/')
 def index():
     p = pyaudio.PyAudio(); devices = []
-    for i in range(p.get_device_count()):
-        try:
-            info = p.get_device_info_by_index(i)
-            if info['maxOutputChannels'] > 0: devices.append({'id': i, 'name': info['name']})
-        except: pass
-    p.terminate()
+    # Scanning audio devices safely
+    try:
+        for i in range(p.get_device_count()):
+            try:
+                info = p.get_device_info_by_index(i)
+                if info['maxOutputChannels'] > 0:
+                    devices.append({'id': i, 'name': info['name']})
+            except: pass
+    except:
+        print("Audio device scan failed (Jack/ALSA error)")
+    finally:
+        p.terminate()
+
     return render_template('index.html', config=current_config, devices=devices)
+
+# NY RUTE: Server billeder fra en 'images' mappe i roden
+@app.route('/images/<path:filename>')
+def custom_static(filename):
+    return send_from_directory('images', filename)
+
+@app.route('/icon.png')
+def icon():
+    return send_from_directory('templates', 'icon.png')
+
+@app.route('/fonts/<path:filename>')
+def custom_fonts(filename):
+
+    return send_from_directory('templates/fonts', filename)
+
+@app.route('/manual')
+def manual():
+    return render_template('manual.html')
 
 def format_time(ms):
     if ms <= 0 or ms == 0xFFFFFFFF: return "--:--.---"
@@ -146,34 +202,69 @@ def get_telemetry():
             packet_age = time.time() - engine.client.last_packet_time
             is_data_fresh = packet_age < 2.5
 
+            # --- BENZIN BEREGNING ---
+            cur_fuel = getattr(d, 'current_fuel', 0.0)
+            max_fuel = getattr(d, 'max_fuel', 100.0)
+            cur_lap = getattr(d, 'current_lap', 0)
+            fuel_pct = (cur_fuel / max_fuel * 100) if max_fuel > 0 else 0
+
+            if cur_lap != fuel_state['last_lap_num']:
+                if fuel_state['last_lap_num'] != -1 and fuel_state['fuel_at_lap_start'] > 0:
+                    used = fuel_state['fuel_at_lap_start'] - cur_fuel
+                    if used > 0:
+                        if fuel_state['avg_consumption'] == 0: fuel_state['avg_consumption'] = used
+                        else: fuel_state['avg_consumption'] = (fuel_state['avg_consumption'] * 0.7) + (used * 0.3)
+                fuel_state['fuel_at_lap_start'] = cur_fuel
+                fuel_state['last_lap_num'] = cur_lap
+
+            if fuel_state['avg_consumption'] > 0:
+                fuel_state['laps_remaining'] = cur_fuel / fuel_state['avg_consumption']
+            else:
+                fuel_state['laps_remaining'] = 0.0
+
+            # --- LAP TREND ---
+            current_last_lap = getattr(d, 'last_lap_ms', -1)
+            if current_last_lap > 0 and current_last_lap != lap_state['last_ms']:
+                if lap_state['last_ms'] > 0:
+                    if current_last_lap < lap_state['last_ms']: lap_state['trend'] = 1
+                    else: lap_state['trend'] = 2
+                lap_state['last_ms'] = current_last_lap
+            if current_last_lap == -1: lap_state['trend'] = 0; lap_state['last_ms'] = -1
+
+            # --- PREPARE DATA ---
             red_start = d.car_max_rpm - 50
             is_at_limit = (d.car_max_rpm > 0 and d.engine_rpm >= red_start) or bool(d.rev_limiter_active)
             is_shift_point = (d.engine_rpm >= d.car_shift_rpm - 100 and d.engine_rpm < red_start - 100) and not is_at_limit
 
             tc_f, tc_r, abs_f, abs_r = tire_processor.get_traction_triggers(d)
-
-
-            trig_f = max(tc_f, abs_f)
-            trig_r = max(tc_r, abs_r)
-
-            if not current_config['effects']['traction'].get('enabled', True):
-                trig_f, trig_r = 0.0, 0.0
+            trig_f = max(tc_f, abs_f); trig_r = max(tc_r, abs_r)
+            if not current_config['effects']['traction'].get('enabled', True): trig_f, trig_r = 0.0, 0.0
 
             debug = getattr(engine, 'live_debug', {'road_noise': 0.0, 'g_force': 0.0, 'sim_road': 0.0})
 
+            # Tire config
+            tt_cfg = current_config['effects'].get('tire_temp', {})
+            tt_base = float(tt_cfg.get('base', 72.0))
+            tt_spread = float(tt_cfg.get('spread', 12.0))
+
             return jsonify({
-                'active': True, 'is_live': is_data_fresh, 'heartbeat': time.time(),
-                'units': current_config.get('units', 'metric'),
+                'active': True, 'is_live': is_data_fresh,
                 'rpm': round(d.engine_rpm), 'max_rpm': d.car_max_rpm or 8000,
                 'speed': d.speed_kmh, 'gear': d.gear, 'throttle': d.throttle, 'brake': d.brake,
-                'tires': process_tires(d), 'rev_limiter': is_at_limit, 'shift_indicator': is_shift_point,
+                'tires': process_tires(d, base=tt_base, spread=tt_spread),
+                'rev_limiter': is_at_limit, 'shift_indicator': is_shift_point,
                 'position': getattr(d, 'position', 0),
                 'best_lap': format_time(getattr(d, 'best_lap_ms', -1)),
                 'last_lap': format_time(getattr(d, 'last_lap_ms', -1)),
+                'lap_trend': lap_state['trend'],
+                'fuel_liter': round(cur_fuel, 1),
+                'fuel_pct': round(fuel_pct),
+                'laps_rem': round(fuel_state['laps_remaining'], 1) if fuel_state['laps_remaining'] > 0 else "CALC...",
                 'analysis': {'road': debug['road_noise'], 'impact': debug['g_force'], 'sim_road': debug.get('sim_road', 0.0)},
                 'traction_triggers': {'front': round(trig_f, 2), 'rear': round(trig_r, 2)}
             })
     return jsonify({'active': engine.running if engine else False, 'is_live': False})
+
 
 @app.route('/api/update', methods=['POST'])
 def update_settings():
@@ -191,10 +282,10 @@ def update_settings():
             current_config['audio']['device_index'] = int(data['audio'].get('device_index', -1))
             current_config['audio']['sample_rate'] = int(data['audio'].get('sample_rate', 48000))
 
-        # HER VAR FEJLEN: 'obstacle_impact' manglede i denne liste!
-        for effect in ['rpm', 'suspension', 'gear_shift', 'traction', 'sim_road', 'obstacle_impact']:
+        for effect in ['rpm', 'suspension', 'gear_shift', 'traction', 'sim_road', 'obstacle_impact', 'tire_temp']:
             if effect in data:
                 for key, val in data[effect].items():
+                    # Sikker konvertering af tal/strings
                     if isinstance(val, str) and (val.replace('.','',1).isdigit() or (val.startswith('-') and val[1:].replace('.','',1).isdigit())):
                         val = float(val)
                     current_config['effects'][effect][key] = val
@@ -222,9 +313,12 @@ def toggle_engine():
         if engine and engine.thread_active: return jsonify({'status': 'busy'})
         current_config['ps5_ip'] = data.get('ip', current_config['ps5_ip'])
         save_config(current_config)
+
+        # Opret og start motor
         engine = ShakerEngine(current_config)
         engine.tire_processor = tire_processor
         threading.Thread(target=engine.run, args=(current_config['ps5_ip'],), daemon=True).start()
+
         return jsonify({'status': 'ok'})
     elif data.get('action') == 'stop':
         if engine: engine.running = False
@@ -257,8 +351,16 @@ def test_shaker():
     threading.Thread(target=play_test_tone, args=(current_config, request.json.get('side', 0)), daemon=True).start()
     return jsonify({'status': 'ok'})
 
-@app.route('/manual')
-def manual(): return render_template('manual.html')
+@app.route('/api/reset', methods=['POST'])
+def reset_to_defaults():
+    global current_config
+    try:
+        current_config = copy.deepcopy(default_config)
+        save_config(current_config)
+        if engine: engine.cfg = current_config
+        return jsonify({'status': 'ok'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'msg': str(e)})
 
 def main():
     app.run(host='0.0.0.0', port=5000, request_handler=NoTelemetryLog)

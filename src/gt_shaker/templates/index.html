@@ -3,340 +3,289 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GT7 Shaker for linux v1.31</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#000000">
 
-<style>
-/* --- COLOR PALETTE AND CSS VARIABLES --- */
-:root {
-    --bg: #121212;
-    --panel: #1e1e1e;
-    --text: #e0e0e0;
-    --accent: #007acc;
-    --gas: #4caf50;
-    --brake: #f44336;
-    --shift: #00ff00; /* Bright Green for Shift */
-    }
+    <link rel="icon" type="image/png" href="/icon.png">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <title>GT7 Shaker Web Interface</title>
+    <style>
+    /* --- FONTS --- */
+    @font-face {
+        font-family: 'Digital';
+        src: url('fonts/digital.ttf') format('truetype');
+        }
 
-/* --- GLOBAL STYLES --- */
-body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; overflow: hidden; }
-.swipe-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; width: 100vw; height: 100vh; scroll-behavior: smooth; }
-.page { flex: 0 0 100vw; width: 100vw; height: 100vh; scroll-snap-align: start; padding: 15px; box-sizing: border-box; overflow-y: auto; padding-bottom: 80px; }
+    /* --- VARIABLES --- */
+    :root {
+        --bg-color: #000000;
+        --app-bar: #121212;
+        --card-bg: #1e1e1e;
+        --primary-blue: #2196F3;
+        --primary-red: #d32f2f;
+        --primary-green: #00e676;
+        --text-white: #ffffff;
+        --text-grey: #9e9e9e;
+        --value-yellow: #ffab00;
+        --slider-track: #424242;
+        --slider-thumb: #2196F3;
+        --font-ui: 'Roboto', 'Segoe UI', sans-serif;
+        --font-digi: 'Digital', monospace;
+        }
 
-.help-btn {
-    background: #444;
-    color: var(--text);
-    text-decoration: none;
-    padding: 0 12px;
-    border-radius: 6px;
-    font-size: 0.7rem;
-    font-weight: bold;
-    border: 1px solid #555;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 38px; /* Matcher højden på input feltet */
-    transition: background 0.2s, border-color 0.2s;
-    white-space: nowrap;
-    }
+    /* --- RESET & BASE --- */
+    body {
+        background-color: var(--bg-color);
+        color: var(--text-white);
+        font-family: var(--font-ui);
+        margin: 0; padding: 0; overflow: hidden;
+        user-select: none; -webkit-tap-highlight-color: transparent;
+        }
 
-.help-btn:hover {
-    background: #555;
-    border-color: var(--accent);
-    }
+    .screen {
+        position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+        display: none; flex-direction: column; background-color: var(--bg-color); overflow-y: auto;
+        }
+    .screen.active { display: flex; }
 
-.status-box.warning {
-    background: rgba(255, 152, 0, 0.2);
-    color: #ff9800;
-    border-color: #ff9800;
-    box-shadow: 0 0 10px rgba(255, 152, 0, 0.2);
-    }
-.profile-card {
-    background: rgba(20, 20, 25, 0.9);
+    /* ================= HOME SCREEN ================= */
+    .footer-text {
+        position: absolute;
+        bottom: 15px;
+        width: 100%;
+        text-align: center;
+        color: #555;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        line-height: 1.4;
+        }
+    #home-screen {
+        background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('images/background.png') no-repeat center center fixed;
+        background-size: cover;
+        align-items: center; justify-content: center;
+        }
+    .home-header-icons { position: absolute; top: 20px; right: 20px; display: flex; gap: 20px; }
+    .icon-btn { font-size: 1.8rem; color: var(--primary-blue); cursor: pointer; }
+    .home-content { width: 90%; max-width: 500px; text-align: center; display: flex; flex-direction: column; gap: 20px; }
+    .app-title { color: var(--primary-blue); font-size: 1.8rem; font-weight: bold; }
+    .ip-input-container { position: relative; background: rgba(30, 30, 30, 0.9); border-radius: 4px; border-bottom: 2px solid white; }
+    .ip-input { width: 100%; padding: 15px; background: transparent; border: none; color: white; font-size: 1rem; box-sizing: border-box; }
+    .ip-icon { position: absolute; right: 15px; top: 15px; color: white; display: flex; align-items: center; justify-content: center; }
+    .big-btn { width: 100%; padding: 18px; border-radius: 30px; border: none; font-size: 1.2rem; font-weight: bold; color: white; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+    .btn-red { background-color: var(--primary-red); }
+    .btn-blue { background-color: var(--primary-blue); }
+    .status-text { color: var(--text-grey); font-weight: bold; margin-top: 10px; letter-spacing: 1px;}
+    .dash-btn-row { display: flex; gap: 10px; width: 100%; justify-content: space-between; }
+    .dash-btn-row button { flex: 1; font-size: clamp(0.8rem, 4vw, 1.2rem); padding: 15px 5px; }
+
+    /* Hjælpe-knap (Cirkel med ?) */
+    .help-icon {
+        width: 35px; height: 35px; border: 2px solid var(--primary-blue); border-radius: 50%;
+        display: flex; align-items: center; justify-content: center; text-decoration: none;
+        color: var(--primary-blue); font-weight: bold; font-size: 1.2rem; transition: 0.2s; cursor: pointer;
+        }
+    .help-icon:hover { background: var(--primary-blue); color: black; }
+
+    /* ================= SETTINGS SCREEN ================= */
+    .top-bar { background-color: var(--bg-color); padding: 15px; display: flex; align-items: center; border-bottom: 1px solid #333; }
+    .back-arrow { font-size: 1.5rem; margin-right: 20px; cursor: pointer; color: white; }
+    .page-title { font-size: 1.2rem; font-weight: bold; }
+
+    .tabs-scroll-container { background-color: var(--bg-color); display: flex; overflow-x: auto; border-bottom: 1px solid #333; padding-top: 10px; }
+    .tabs-scroll-container::-webkit-scrollbar { height: 0px; }
+    .tab-btn { padding: 15px 20px; background: transparent; border: none; color: var(--text-grey); font-size: 0.9rem; font-weight: bold; text-transform: uppercase; white-space: nowrap; cursor: pointer; border-bottom: 3px solid transparent; }
+    .tab-btn.active { color: var(--primary-blue); border-bottom: 3px solid var(--primary-blue); }
+
+    .settings-content { padding: 20px; flex: 1; overflow-y: auto; padding-bottom: 80px; }
+    .md-card { background-color: var(--card-bg); border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 1px solid #333; }
+
+    .setting-row { margin-bottom: 25px; }
+    .label-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .label-title { font-size: 1rem; }
+    .label-value { color: var(--value-yellow); font-size: 0.9rem; font-weight: bold; }
+
+    /* Hjælpetekster under titler (Genskabt fra din backup) */
+    .help-row { display: flex; justify-content: space-between; font-size: 0.75rem; color: #888; margin-top: -5px; margin-bottom: 8px; font-style: italic; }
+
+    /* Controls */
+    input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; margin-bottom: 5px; }
+    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: var(--slider-track); border-radius: 2px; }
+    input[type=range]::-webkit-slider-thumb { height: 18px; width: 18px; border-radius: 50%; background: var(--slider-thumb); cursor: pointer; -webkit-appearance: none; margin-top: -7px; }
+
+    .switch-row { display: flex; justify-content: space-between; align-items: center; height: 50px; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+    .section-title { color: var(--primary-blue); font-size: 1.1rem; font-weight: bold; margin: 0; }
+
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .3s; border-radius: 24px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--primary-blue); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    /* Buttons */
+    .profile-btn-group { display: flex; gap: 10px; margin-top: 15px; }
+    .p-btn { flex: 1; padding: 15px; border-radius: 8px; border:none; color: white; font-weight: bold; cursor: pointer; background: #333; transition: 0.2s;}
+    .p-btn.active { background: var(--primary-blue); box-shadow: 0 0 10px rgba(33, 150, 243, 0.5); }
+    .reset-btn { width: 100%; padding: 15px; border-radius: 8px; border: none; background-color: var(--primary-red); color: white; font-weight: bold; margin-top: 20px; }
+    .hw-test-row { display: flex; gap: 10px; margin-top: 10px; }
+    .hw-btn { flex: 1; background: #333; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer;}
+    select { background: #333; color: white; border: 1px solid #444; padding: 10px; border-radius: 4px; width: 100%; font-size: 1rem; outline: none; margin-top: 5px; }
+
+    /* ================= DASHBOARD STYLES ================= */
+    .dash-container { padding: 10px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; }
+    .top-row-container { display: flex; align-items: center; gap: 10px; height: 60px; width: 100%; margin-bottom: 15px; }
+    .back-btn-box { width: 50px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.5rem; color: white; }
+
+    .top-rpm-bar { flex-grow: 1; display: flex; height: 100%; gap: 2px; background: #222; padding: 2px; border-radius: 4px; }
+    .rpm-seg { flex: 1; background: #333; transition: background-color 0.05s; height: 100%; }
+    .rpm-seg.green { background-color: #4caf50; box-shadow: 0 0 5px #4caf50; opacity: 1; }
+    .rpm-seg.yellow { background-color: #ffeb3b; box-shadow: 0 0 5px #ffeb3b; opacity: 1; }
+    .rpm-seg.red { background-color: #f44336; box-shadow: 0 0 5px #f44336; opacity: 1; }
+    .rpm-seg.shift-blue { background-color: #2962ff; box-shadow: 0 0 10px #2962ff; opacity: 1; }
+    .rpm-seg.shift-red { background-color: #f44336; box-shadow: 0 0 10px #f44336; opacity: 1; }
+    .rpm-seg.inactive { opacity: 0.2; background-color: #333; }
+
+    .speed-box-large { width: 120px; height: 100%; background: #1e1e1e; display: flex; flex-direction: row; align-items: baseline; justify-content: center; border-radius: 4px; border: 1px solid #333; padding: 0 10px; }
+    .speed-val-large { font-size: 2.5rem; font-weight: bold; color: white; line-height: 60px; font-family: 'Roboto', sans-serif; }
+    .speed-unit-small { font-size: 0.8rem; color: #888; margin-left: 5px; }
+
+    .race-grid { display: grid; grid-template-columns: 25% 45% 30%; gap: 10px; flex: 1; }
+    .tire-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 5px; }
+    .tire-box { background: #333; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; transition: background-color 0.2s; }
+    .tire-label { font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; }
+    .tire-temp { font-size: 1.5rem; font-weight: bold; }
+
+    .center-panel { display: flex; align-items: center; justify-content: center; flex-direction: row; }
+    .gear-val { font-family: 'Digital', monospace; font-size: 8rem; color: #ffeb3b; text-shadow: 2px 2px 0px #000; }
+
+    .right-panel { display: flex; flex-direction: column; gap: 5px; }
+    .info-box { background: #1e1e1e; padding: 10px; border-radius: 4px; display: flex; flex-direction: column; justify-content: center; }
+    .info-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; }
+    .race-box-large { display: flex; justify-content: flex-end; align-items: center; }
+
+    .bottom-panel { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px; height: 80px; }
+    .fuel-box { background: #1e1e1e; padding: 10px; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .fuel-val { font-size: 1.5rem; color: #ff9800; font-weight: bold; }
+
+    @keyframes flashRed { 0% { background-color: #1e1e1e; } 50% { background-color: #d32f2f; } 100% { background-color: #1e1e1e; } }
+    .flash-alert { animation: flashRed 1s infinite; color: white !important; }
+
+    .telemetry-chart-container {
+    flex: 0 1 30% !important; /* Beder den tage max 30% af skærmen, men tillader den at skrumpe */
+    min-height: 80px;
+    background: #1e1e1e;
+    border-radius: 4px;
+    margin-top: 10px !important;
     border: 1px solid #333;
-    padding: 15px;
-    border-radius: 12px;
-    margin-top: 10px;
+    position: relative;
+    overflow: hidden; /* Stopper grafen i at flyde ud over kanten */
     }
+    canvas { width: 100%; height: 100%; }
+    /* --- MOBIL LANDSKAB FIX --- */
+    @media (max-height: 500px) {
+        /* Gør toppen mindre */
+        .top-row-container { height: 40px; margin-bottom: 5px; }
+        .speed-val-large { font-size: 2rem; line-height: 40px; }
 
-.profile-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-    border-bottom: 1px solid #444;
-    padding-bottom: 8px;
-    }
+        /* Gør Gear-tallet meget mindre, så kasserne ikke tvinges store */
+        .gear-val { font-size: 5rem !important; }
 
-.profile-title {
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 1.2rem;
-    font-weight: bold;
-    width: 100%;
-    outline: none;
-    }
+        /* Skrump info kasserne og teksten */
+        .race-grid { gap: 5px; }
+        .info-box { padding: 5px; }
+        .info-label { font-size: 0.6rem; }
+        .race-box-large div { font-size: 1.1rem !important; }
+        .tire-temp { font-size: 1.1rem; }
 
-.profile-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    }
+        /* Gør bunden mere kompakt */
+        .bottom-panel { height: 50px; gap: 5px; margin-top: 5px;}
+        .fuel-val { font-size: 1.1rem; }
+        .telemetry-chart-container { flex: 0 1 25% !important; margin-top: 5px !important; }
+        }
+    </style>
+    </head>
+    <body>
 
-.p-btn {
-    background: #2a2a35;
-    color: #888;
-    border: 2px solid #444;
-    padding: 10px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    }
-
-.p-btn.active {
-    color: #fff;
-    border-color: #00e5ff;
-    box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
-    background: #00e5ff22;
-    }
-
-.p-btn:hover:not(.active) {
-    border-color: #888;
-    color: #fff;
-    }
-body.light-mode {
-    --bg: #f5f5f5; --panel: #ffffff; --text: #222222;
-    }
-body.light-mode .card { border-color: #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-body.light-mode .race-box-large { background: #eee; border-color: #ccc; }
-
-/* --- CARD AND UI COMPONENTS --- */
-.card { background: var(--panel); border-radius: 12px; padding: 15px; margin-bottom: 12px; border: 1px solid #333; }
-h2 { margin: 0 0 10px 0; font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
-label { display: block; margin-bottom: 5px; font-size: 0.9rem; }
-.val-label { font-family: monospace; color: var(--accent); font-weight: bold; font-size: 0.85rem; }
-input[type=range] { width: 100%; margin: 10px 0; accent-color: var(--accent); }
-.help-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: #666; margin-top: -2px; margin-bottom: 5px; }
-.bal-labels { display: flex; justify-content: space-between; font-size: 0.7rem; margin-top: 5px; }
-
-/* --- NEW RACE DASHBOARD STYLES (SIDE 1) --- */
-.rpm-race-bar {
-    height: 70px; background: #333; color: white; display: flex; justify-content: center; align-items: center;
-    font-family: monospace; font-size: 2.5rem; font-weight: bold; border-radius: 12px; border: 2px solid #444;
-    margin-bottom: 15px; transition: background 0.1s, color 0.1s, border-color 0.1s;
-    }
-/* Shift Light State (Green) */
-.rpm-race-bar.shift { background: var(--shift); color: #000; border-color: var(--shift); box-shadow: 0 0 20px var(--shift); }
-/* Rev Limiter State (Blinking Red) */
-.rpm-race-bar.limit { animation: blinkRed 0.15s infinite; color: white; border-color: var(--brake); }
-@keyframes blinkRed { 0%, 100% { background: var(--brake); } 50% { background: #400000; } }
-
-.race-grid-large { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-.race-box-large { background: var(--panel); height: 120px; border-radius: 12px; border: 1px solid #333; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-.race-val-huge { font-size: 4rem; font-weight: bold; font-family: sans-serif; }
-.race-label { font-size: 0.9rem; color: #888; text-transform: uppercase; margin-top: 5px; }
-
-.tire-vertical-box { background: #151515; border-radius: 8px; padding: 15px; border: 1px solid #333; text-align: center; }
-.tire-temp-large { font-size: 1.8rem; font-weight: bold; font-family: monospace; }
-
-/* --- EXISTING STYLES (SIDE 2 & 3) --- */
-select { background: #333; color: white; border: 1px solid #444; padding: 8px; width: 100%; border-radius: 6px; margin-top: 5px; outline: none; }
-.btn { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
-.btn.stop { background: #d32f2f; }
-input[type=number] { width: 100%; background: #333; border: 1px solid #444; color: white; padding: 8px; border-radius: 6px; box-sizing: border-box; }
-canvas { width: 100%; height: 100px; background: #000; border-radius: 8px; margin-top: 10px; }
-.telemetry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-.tele-box { background: #000; padding: 10px; border-radius: 8px; text-align: center; }
-.tele-label { font-size: 0.7rem; color: #666; text-transform: uppercase; }
-.tele-val { font-size: 1.5rem; font-weight: bold; margin: 5px 0; }
-.bar-bg { width: 100%; height: 6px; background: #333; border-radius: 3px; overflow: hidden; margin-top: 5px; }
-.bar-fill { height: 100%; width: 0%; background: var(--accent); transition: 0.1s; }
-.switch { position: relative; display: inline-block; width: 40px; height: 20px; }
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .4s; border-radius: 20px; }
-.slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
-input:checked + .slider { background-color: var(--accent); }
-input:checked + .slider:before { transform: translateX(20px); }
-.status-box { font-size: 0.65rem; padding: 8px 12px; border-radius: 6px; text-transform: uppercase; font-weight: bold; white-space: nowrap; transition: 0.3s; min-width: 90px; text-align: center; border: 1px solid transparent; }
-.status-box.valid { background: rgba(76, 175, 80, 0.2); color: #4caf50; border-color: #4caf50; box-shadow: 0 0 10px rgba(76, 175, 80, 0.2); }
-.status-box.invalid { background: rgba(244, 67, 54, 0.1); color: #f44336; border-color: #f44336; }
-
-/* --- NAVIGATION DOTS (3 PAGES) --- */
-.nav-dots { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 8px; pointer-events: none; }
-.dot { width: 8px; height: 8px; border-radius: 50%; background: #444; transition: 0.3s; }
-.dot.active { background: var(--accent); transform: scale(1.3); }
-</style>
-</head>
-
-<body>
-
-<div class="swipe-container" id="scroller">
-
-    <div class="page" style="background: #0a0a0a;">
-    <div id="race_rpm_bar" class="rpm-race-bar">
-    <span id="race_rpm_val">0</span> RPM
+    <div id="home-screen" class="screen active">
+    <div class="home-header-icons">
+    <a href="{{ url_for('manual') }}" target="_blank" class="help-icon">?</a>
+    <span class="icon-btn" onclick="goToSettings()">&#9881;</span>
     </div>
-
-    <div class="race-grid-large">
-    <div class="race-box-large">
-    <div class="race-val-huge" id="race_gear_disp">-</div>
-    <div class="race-label">GEAR</div>
+    <div class="home-content">
+    <div class="app-title">GT7 Shaker for Linux</div>
+    <div class="ip-input-container">
+    <input type="text" id="ps5_ip" class="ip-input" value="{{ config.ps5_ip }}" placeholder="PS5 IP Address">
+    <span class="ip-icon">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
+    <path d="M19,4H5C3.89,4 3,4.89 3,6V14C3,15.11 3.89,16 5,16H11V19H4V21H20V19H13V16H19C20.11,16 21,15.11 21,14V6C21,4.89 20.11,4 19,4M19,14H5V6H19V14M10,7H11V13H10V7M12,7H14.5C15.33,7 16,7.67 16,8.5V10.5C16,11.33 15.33,12 14.5,12H13V13H12V7M13,8H14.5V10.5H13V8Z" />
+    </svg>
+    </span>
     </div>
-    <div class="race-box-large">
-    <div class="race-val-huge" id="race_speed_disp">0</div>
-    <div class="race-label" id="race_speed_unit">km/h</div>
+    <button id="toggleBtn" class="big-btn btn-blue" onclick="toggleEngine()">START ENGINE</button>
+    <div id="status_indicator" class="status-text">OFFLINE</div>
+    <div class="dash-btn-row">
+    <button class="big-btn btn-blue" onclick="goToScreen('dashboard1')">DASHBOARD</button>
+    <button class="big-btn btn-blue" onclick="goToScreen('dashboard2')">TELEMETRY</button>
     </div>
     </div>
+    <div class="footer-text">
+    Copyright (C) 2026 Soeren Helskov<br>
+    Version 1.4
+    </div>
+    </div> ```
 
-    <div class="race-grid-large" style="grid-template-columns: 1fr 1fr 1fr; gap: 10px; height: 80px; margin-bottom: 15px;">
-    <div class="race-box-large" style="height: 100%;">
-    <div class="race-val-huge" id="race_pos_disp" style="font-size: 2rem;">-</div>
-    <div class="race-label">POS</div>
+    <div id="settings-screen" class="screen">
+    <div class="top-bar">
+    <div class="back-arrow" onclick="goToScreen('home-screen')">&larr;</div>
+    <div class="page-title">Configuration</div>
     </div>
-    <div class="race-box-large" style="height: 100%;">
-    <div id="race_last_lap" style="font-family: monospace; font-size: 1.1rem; font-weight: bold;">--:--.---</div>
-    <div class="race-label">LAST</div>
-    </div>
-    <div class="race-box-large" style="height: 100%;">
-    <div id="race_best_lap" style="font-family: monospace; font-size: 1.1rem; font-weight: bold; color: var(--shift);">--:--.---</div>
-    <div class="race-label">BEST</div>
-    </div>
-    </div>
-
-    <div class="card">
-    <h2 style="margin-bottom: 15px;">Tire Status</h2>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-    {% for id in ['FL', 'FR', 'RL', 'RR'] %}
-    <div class="tire-vertical-box">
-    <div style="font-size: 0.8rem; color: #666; margin-bottom: 5px;">{{ id }}</div>
-    <div id="race_temp_{{ id }}" class="tire-temp-large" style="color: #ffffff;">--</div>
-    </div>
-    {% endfor %}
-    </div>
-    <div class="card profile-card">
-    <div class="profile-header">
-    <span class="status-dot"></span>
-    <input type="text" id="profile-name-input" class="profile-title"
-    value="{{ config.profiles[config.active_profile_id].name }}"
-    onchange="updateProfileName(this.value)">
-    <i class="edit-icon">✎</i>
+    <div class="tabs-scroll-container">
+    <button class="tab-btn active" onclick="openTab('general')">General</button>
+    <button class="tab-btn" onclick="openTab('profiles')">Profiles</button>
+    <button class="tab-btn" onclick="openTab('engine')">Engine</button>
+    <button class="tab-btn" onclick="openTab('gear')">Gear</button>
+    <button class="tab-btn" onclick="openTab('traction')">Traction</button>
+    <button class="tab-btn" onclick="openTab('suspension')">Suspension</button>
+    <button class="tab-btn" onclick="openTab('simroad')">Sim Road</button>
+    <button class="tab-btn" onclick="openTab('collision')">Collision</button>
+    <button class="tab-btn" onclick="openTab('tiretemp')">Tire Temp</button>
     </div>
 
-    <div class="profile-grid">
-    <button onclick="switchProfile('1')" id="btn-p1" class="p-btn {% if config.active_profile_id == '1' %}active{% endif %}">P1</button>
-    <button onclick="switchProfile('2')" id="btn-p2" class="p-btn {% if config.active_profile_id == '2' %}active{% endif %}">P2</button>
-    <button onclick="switchProfile('3')" id="btn-p3" class="p-btn {% if config.active_profile_id == '3' %}active{% endif %}">P3</button>
-    <button onclick="switchProfile('4')" id="btn-p4" class="p-btn {% if config.active_profile_id == '4' %}active{% endif %}">P4</button>
+    <div id="tab-general" class="settings-content">
+    <div class="md-card">
+    <div class="section-header"><span class="section-title">Global Audio Output</span></div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Master Volume</span><span class="label-value" id="master_volume_disp">{{ (config.master_volume|float * 100)|int }}%</span></div>
+    <input type="range" id="master_volume" min="0" max="1" step="0.01" value="{{ config.master_volume }}" oninput="updateVal('master_volume_disp', this.value, '%')" onchange="sendUpdate()">
     </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Output Headroom</span><span class="label-value" id="output_headroom_disp">{{ (config.output_headroom|float * 100)|int }}%</span></div>
+    <input type="range" id="output_headroom" min="0.40" max="0.70" step="0.01" value="{{ config.output_headroom }}" oninput="updateVal('output_headroom_disp', this.value, '%')" onchange="sendUpdate()">
     </div>
-    </div>
-    <p style="text-align: center; color: #666; font-size: 0.75rem; margin-top: 30px; margin-bottom: 5px;">Copyright (C) 2026 Soeren Helskov</p>
-
-    <p style="text-align: center; color: #444; font-size: 0.7rem; margin-top: 20px;">Swipe left for controls & settings</p>
-    </div>
-
-<div class="page">
-<div class="card">
-<h2>Connection</h2>
-<div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-<a href="/manual" target="_blank" class="help-btn">HELP</a>
-<input type="text" id="ps5_ip" value="{{ config.ps5_ip }}" placeholder="PS5 IP Address" style="flex:1; padding:10px; background:#333; border:1px solid #444; color:white; border-radius:6px; font-family:monospace;">
-<div id="status_indicator" class="status-box invalid">Offline</div>
-</div>
-<button id="toggleBtn" class="btn" onclick="toggleEngine()">START ENGINE</button>
-</div>
-
-        <div class="telemetry-grid">
-        <div class="tele-box"><div class="tele-label">Gear</div><div class="tele-val" id="gear_disp">-</div></div>
-        <div class="tele-box"><div class="tele-label">Speed</div><div class="tele-val"><span id="speed_disp">0</span><small id="speed_unit" style="font-size:0.8rem;color:#666;margin-left:4px;">km/h</small></div></div>
-        </div>
-
-        <div class="card">
-        <h2>Tire temperature</h2>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 5px;">
-        {% for id in ['FL', 'FR', 'RL', 'RR'] %}
-        <div id="tire_{{ id }}" style="display: flex; align-items: center; background: #151515; border-radius: 8px; padding: 10px; border: 1px solid #333; gap: 10px; justify-content: center;">
-        <div style="text-align: center;">
-        <div style="font-size: 0.6rem; color: #666; margin-bottom: 2px;">{{ id }}</div>
-        <div class="val-label" id="temp_{{ id }}" style="font-size: 1.1rem; color: #ffffff;">--</div>
-        </div>
-        </div>
-        {% endfor %}
-        </div>
-        </div>
-
-        <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-        <span id="rpm_val" style="font-family:monospace;">0 RPM</span>
-        </div>
-        <div class="bar-bg">
-        <div id="rpm_bar" class="bar-fill"></div>
-        </div>
-        <canvas id="pedalCanvas"></canvas>
-        <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-top:5px; color:#888;">
-        <span style="color:var(--gas)">● Throttle</span>
-        <span style="color:var(--brake)">● Brake</span>
-        </div>
-        </div>
-
-        <div class="card">
-        <h2>Shaker Signal Analysis</h2>
-        <canvas id="tuneCanvas"></canvas>
-        <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-top:5px; color:#888;">
-        <span><b style="color:#f44336">●</b> Road</span>
-        <span><b style="color:#007acc">●</b> Impact</span>
-        <span><b style="color:#ffeb3b">●</b> Traction</span>
-        <span><b style="color:#9c27b0">●</b> Sim-Road</span>
-        </div>
-        </div>
-        </div> <div class="page"> <div class="card">
-        <h2>General Settings</h2>
-    <div style="display:flex; justify-content:space-between;"><label>Master Volume</label><span id="master_vol_disp" class="val-label">{{ (config.master_volume|float * 100)|int }}%</span></div>
-    <input type="range" id="master_vol" min="0" max="1" step="0.01" value="{{ config.master_volume }}" oninput="document.getElementById('master_vol_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
-    <div style="display:flex; justify-content:space-between; margin-top:15px;"><label>Output Headroom</label><span id="headroom_val_disp" class="val-label">{{ (config.output_headroom|float * 100)|int if config.output_headroom is defined else 45 }}%</span></div>
-    <input type="range" id="output_headroom" min="0.40" max="0.70" step="0.01" value="{{ config.output_headroom if config.output_headroom is defined else 0.45 }}" oninput="document.getElementById('headroom_val_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
-    <p style="color: #f44336; font-size: 0.65rem; margin-top: -5px; font-style: italic;">Caution: High settings may cause clipping and muddy effects.</p>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:10px; border-top: 1px solid #333;">
-    <label>Keep Screen Awake</label>
-    <label class="switch">
-    <input type="checkbox" id="wake_lock_toggle" onchange="toggleWakeLock()">
-    <span class="slider"></span>
-    </label>
+    <p style="color: #f44336; font-size: 0.75rem; font-style: italic; margin-top: -10px;">Caution: High settings may cause clipping and muddy effects.</p>
     </div>
 
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-    <label>Light Mode UI</label>
-    <label class="switch">
-    <input type="checkbox" id="theme_toggle" onchange="toggleTheme()">
-    <span class="slider"></span>
-    </label>
+    <div class="md-card">
+    <div class="switch-row"><span>Keep Screen Awake</span><label class="switch"><input type="checkbox" id="wake_lock_toggle" onchange="toggleWakeLock();"><span class="slider"></span></label></div>
+    <div class="switch-row"><span>Active during Replays</span><label class="switch"><input type="checkbox" id="allowReplays" {% if config.allow_replays %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></div>
+    <div class="switch-row"><span>Mono (Mixed)</span><label class="switch"><input type="checkbox" id="shaker_mode_toggle" {% if config.shaker_mode == 1 %}checked{% endif %} onchange="document.getElementById('shaker_mode').value = this.checked ? 1 : 2; sendUpdate();"><span class="slider"></span></label><input type="hidden" id="shaker_mode" value="{{ config.shaker_mode }}"></div>
+    <div class="switch-row"><span>Swap Channels (L/R)</span><label class="switch"><input type="checkbox" id="swap_channels" {% if config.swap_channels %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></div>
     </div>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-    <label>Active during Replays</label>
-    <label class="switch">
-    <input type="checkbox" id="allowReplays" {% if config.allow_replays %}checked{% endif %} onchange="sendUpdate()">
-    <span class="slider"></span>
-    </label>
-    </div>
-    <label style="margin-top:10px;">Measurement Units</label>
+
+    <div class="md-card">
+    <div class="setting-row">
+    <label>Measurement Units</label>
     <select id="units" onchange="sendUpdate()">
     <option value="metric" {% if config.units == 'metric' %}selected{% endif %}>Metric (km/h / °C)</option>
     <option value="imperial" {% if config.units == 'imperial' %}selected{% endif %}>Imperial (mph / °F)</option>
     </select>
-
-    <label style="margin-top:10px;">Shaker Mode</label>
-    <select id="shaker_mode" onchange="sendUpdate()">
-    <option value="2" {% if config.shaker_mode == 2 %}selected{% endif %}>2 Shakers (Front/Rear Stereo)</option>
-    <option value="1" {% if config.shaker_mode == 1 %}selected{% endif %}>1 Shaker (Mono Mixdown)</option>
-    </select>
-
-    <div style="display: flex; gap: 10px; margin-top: 10px;">
+    </div>
+    <div style="display: flex; gap: 10px; margin-top: 15px;">
     <div style="flex: 3;">
     <label>Audio Interface</label>
     <select id="audio_device" onchange="sendUpdate()">
-    {% for dev in devices %}
-    <option value="{{ dev.id }}" {% if config.audio.device_index == dev.id %}selected{% endif %}>{{ dev.name }}</option>
-    {% endfor %}
+    {% for dev in devices %}<option value="{{ dev.id }}" {% if config.audio.device_index == dev.id %}selected{% endif %}>{{ dev.name }}</option>{% endfor %}
     </select>
     </div>
     <div style="flex: 2;">
@@ -348,546 +297,715 @@ input:checked + .slider:before { transform: translateX(20px); }
     </div>
     </div>
 
-    <div id="testArea" style="margin-top:20px; border-top:1px solid #333; padding-top:15px;">
-    <label style="color:#888; font-size:0.75rem; text-transform:uppercase;">Hardware Output Test</label>
-    <div style="display:flex; gap:10px; margin-top:8px;">
-    <button id="test_rear_btn" class="btn" style="background:#333; flex:1;" onclick="testShaker(0)">TEST REAR</button>
-    <button id="test_front_btn" class="btn" style="background:#333; flex:1;" onclick="testShaker(1)">TEST FRONT</button>
+    <div class="setting-row" style="margin-top:25px; border-top: 1px solid #333; padding-top: 15px;">
+    <div class="label-title">Hardware Output Test</div>
+    <div class="hw-test-row">
+    <button id="test_rear_btn" class="hw-btn" onclick="testShaker(0)">TEST LEFT (R)</button>
+    <button id="test_front_btn" class="hw-btn" onclick="testShaker(1)">TEST RIGHT (F)</button>
     </div>
-    <p id="test_hint" style="color:#666; font-size:0.65rem; margin-top:10px; text-align:center;">Only available when engine is off</p>
+    <p id="test_hint" style="color:#666; font-size:0.75rem; margin-top:10px; text-align:center;">Only available when engine is off</p>
+    </div>
+    <button class="reset-btn" onclick="resetDefaults()">RESET TO DEFAULTS</button>
     </div>
     </div>
 
-    <div class="card">
-    <h2>Engine RPM <span><label class="switch"><input type="checkbox" id="rpm_enabled" {% if config.effects.rpm.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></span></h2>
-    <div style="display:flex; justify-content:space-between;"><label>Volume</label><span id="rpm_val_disp" class="val-label">{{ (config.effects.rpm.volume|float * 100)|int }}%</span></div>
-    <input type="range" id="rpm_vol" min="0" max="1.0" step="0.01" value="{{ config.effects.rpm.volume }}" oninput="document.getElementById('rpm_val_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
+    <div id="tab-profiles" class="settings-content" style="display:none;">
+    <div class="md-card">
+    <div class="ip-input-container">
+    <input type="text" id="profile-name-input" class="ip-input" value="{{ config.profiles[config.active_profile_id].name }}" onchange="updateProfileName(this.value)">
+    </div>
+    <div class="profile-btn-group">
+    {% for i in ['1','2','3','4'] %}
+    <button id="btn-p{{i}}" class="p-btn {% if config.active_profile_id == i %}active{% endif %}" onclick="switchProfile('{{i}}')">P{{i}}</button>
+    {% endfor %}
+    </div>
+    </div>
+    </div>
 
-    <label>Axle Balance (Rear/Front)</label>
-    <div class="bal-labels"><span>Rear (Left)</span><span>Front (Right)</span></div>
-    <input type="range" id="rpm_bal" min="0" max="1" step="0.05" value="{{ config.effects.rpm.balance }}" onchange="sendUpdate()">
-
-    <label style="margin-top:10px;">Motor Profile</label>
+    <div id="tab-engine" class="settings-content" style="display:none;">
+    <div class="md-card">
+    <div class="section-header">
+    <span class="section-title">RPM Vibration</span>
+    <label class="switch"><input type="checkbox" id="rpm_enabled" {% if config.effects.rpm.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label>
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Volume</span><span class="label-value" id="rpm_val_disp">{{ (config.effects.rpm.volume|float * 100)|int }}%</span></div>
+    <input type="range" id="rpm_vol" min="0" max="1" step="0.01" value="{{ config.effects.rpm.volume }}" oninput="updateVal('rpm_val_disp', this.value, '%')" onchange="sendUpdate()">
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Axle Balance (Rear/Front)</span><span class="label-value" id="rpm_bal_disp">{{ (config.effects.rpm.balance|float * 100)|int }}%</span></div>
+    <div class="help-row"><span>Rear (Left)</span><span>Front (Right)</span></div>
+    <input type="range" id="rpm_bal" min="0" max="1" step="0.01" value="{{ config.effects.rpm.balance }}" oninput="updateVal('rpm_bal_disp', this.value, '%')" onchange="sendUpdate()">
+    </div>
+    <div class="setting-row">
+    <label>Motor Profile</label>
     <select id="rpm_profile" onchange="sendUpdate()">
     <option value="sine" {% if config.effects.rpm.profile == 'sine' %}selected{% endif %}>Sine Wave</option>
     <option value="v8" {% if config.effects.rpm.profile == 'v8' %}selected{% endif %}>V8 (Ignition Pulses)</option>
     <option value="boxer" {% if config.effects.rpm.profile == 'boxer' %}selected{% endif %}>Boxer (Rhythm)</option>
     </select>
-
-    <div style="display:flex; gap:10px; margin-top:15px;">
-    <div style="flex:1"><label>Min Hz</label><input type="number" id="rpm_min" value="{{ config.effects.rpm.min_freq }}" onchange="sendUpdate()"></div>
-    <div style="flex:1"><label>Max Hz</label><input type="number" id="rpm_max" value="{{ config.effects.rpm.max_freq }}" onchange="sendUpdate()"></div>
+    </div>
+    <div style="display:flex; gap:20px; margin-top:10px;">
+    <div class="setting-row" style="flex:1;">
+    <div class="label-row"><span class="label-title">Min Hz</span><span class="label-value" id="rpm_min_disp">{{ config.effects.rpm.min_freq }} Hz</span></div>
+    <input type="range" id="rpm_min" min="10" max="100" step="1" value="{{ config.effects.rpm.min_freq }}" oninput="updateVal('rpm_min_disp', this.value, ' Hz')" onchange="sendUpdate()">
+    </div>
+    <div class="setting-row" style="flex:1;">
+    <div class="label-row"><span class="label-title">Max Hz</span><span class="label-value" id="rpm_max_disp">{{ config.effects.rpm.max_freq }} Hz</span></div>
+    <input type="range" id="rpm_max" min="50" max="150" step="1" value="{{ config.effects.rpm.max_freq }}" oninput="updateVal('rpm_max_disp', this.value, ' Hz')" onchange="sendUpdate()">
+    </div>
+    </div>
+    <div class="setting-row" style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;">
+    <div class="label-row"><span class="label-title">Pit Limiter Boost (Vol)</span><span class="label-value" id="rpm_pit_boost_disp">{{ (config.effects.rpm.pit_boost|float * 100)|int }}%</span></div>
+    <input type="range" id="rpm_pit_boost" min="0" max="1" step="0.01" value="{{ config.effects.rpm.pit_boost }}" oninput="updateVal('rpm_pit_boost_disp', this.value, '%')" onchange="sendUpdate()">
+    </div>
+    </div>
     </div>
 
-    <div style="display:flex; justify-content:space-between; margin-top:15px; border-top: 1px solid #333; padding-top:10px;">
-    <label>Pit Boost (Vol)</label>
-    <span id="rpm_pit_boost_val" class="val-label">{{ (config.effects.rpm.pit_boost|float * 100)|int }}%</span>
+    <div id="tab-gear" class="settings-content" style="display:none;">
+    <div class="md-card">
+    <div class="section-header">
+    <span class="section-title">Gear Shift Kick</span>
+    <label class="switch"><input type="checkbox" id="gear_enabled" {% if config.effects.gear_shift.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label>
     </div>
-    <input type="range" id="rpm_pit_boost" min="0" max="1.0" step="0.01" value="{{ config.effects.rpm.pit_boost or 0.8 }}" oninput="document.getElementById('rpm_pit_boost_val').innerText = Math.round(this.value*100)+'%'" onchange="sendUpdate()">
-
-    <div class="card">
-    <h2>Suspension <span><label class="switch"><input type="checkbox" id="susp_enabled" {% if config.effects.suspension.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></span></h2>
-    <div style="display:flex; justify-content:space-between;"><label>Road Vol (Red)</label><span id="road_vol_disp" class="val-label">{{ (config.effects.suspension.road_volume|float * 100)|int }}%</span></div>
-    <input type="range" id="susp_road_vol" min="0" max="1.0" step="0.01" value="{{ config.effects.suspension.road_volume }}" oninput="document.getElementById('road_vol_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
-
-    <div style="display:flex; justify-content:space-between;"><label>Impact Vol (Blue)</label><span id="impact_vol_disp" class="val-label">{{ (config.effects.suspension.impact_volume|float * 100)|int }}%</span></div>
-    <input type="range" id="susp_impact_vol" min="0" max="1.0" step="0.01" value="{{ config.effects.suspension.impact_volume }}" oninput="document.getElementById('impact_vol_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
-
-    <div style="border-top: 1px solid #333; margin-top: 10px; padding-top: 10px;">
-    <div style="display:flex; justify-content:space-between;"><label style="color:#f44336">Road Sensitivity (Red)</label><span id="thresh_val" class="val-label">{{ config.effects.suspension.threshold }}</span></div>
-    <div class="help-labels"><span>More road details</span><span>Lest road details</span></div>
-    <input type="range" id="susp_thresh" min="0.0" max="1.0" step="0.01" value="{{ config.effects.suspension.threshold }}" oninput="document.getElementById('thresh_val').innerText=this.value" onchange="sendUpdate()">
-
-    <div style="margin-top:15px; display:flex; justify-content:space-between;"><label style="color:#007acc">Impact Sensitivity (Blue)</label><span id="impact_thresh_val" class="val-label">{{ config.effects.suspension.impact_threshold }}</span></div>
-    <div class="help-labels"><span>Less curb detals</span><span>More curb details</span></div>
-    <input type="range" id="susp_impact_thresh" min="0.5" max="40.0" step="0.1" value="{{ config.effects.suspension.impact_threshold }}" oninput="document.getElementById('impact_thresh_val').innerText=this.value" onchange="sendUpdate()">
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Volume</span><span class="label-value" id="gear_vol_disp">{{ (config.effects.gear_shift.volume|float * 100)|int }}%</span></div>
+    <input type="range" id="gear_vol" min="0" max="1" step="0.01" value="{{ config.effects.gear_shift.volume }}" oninput="updateVal('gear_vol_disp', this.value, '%')" onchange="sendUpdate()">
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Axle Balance (Rear/Front)</span><span class="label-value" id="gear_bal_disp">{{ (config.effects.gear_shift.balance|float * 100)|int }}%</span></div>
+    <div class="help-row"><span>Rear (Left)</span><span>Front (Right)</span></div>
+    <input type="range" id="gear_bal" min="0" max="1" step="0.01" value="{{ config.effects.gear_shift.balance }}" oninput="updateVal('gear_bal_disp', this.value, '%')" onchange="sendUpdate()">
+    </div>
+    </div>
     </div>
 
-    <label style="margin-top:15px;">Axle Balance (Rear/Front)</label>
-    <div class="bal-labels"><span>Rear (Left)</span><span>Front (Right)</span></div>
-    <input type="range" id="susp_bal" min="0" max="1" step="0.05" value="{{ config.effects.suspension.balance }}" onchange="sendUpdate()">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;"><label>Priority Suspension over Engine Sound</label><label class="switch"><input type="checkbox" id="susp_priority" {% if config.effects.suspension.priority %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></div>
+    <div id="tab-traction" class="settings-content" style="display:none;">
+    <div class="md-card">
+    <div class="section-header">
+    <span class="section-title">Traction Loss / ABS</span>
+    <label class="switch"><input type="checkbox" id="traction_enabled" {% if config.effects.traction.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label>
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Volume</span><span class="label-value" id="traction_vol_disp">{{ (config.effects.traction.volume|float * 100)|int }}%</span></div>
+    <input type="range" id="traction_vol" min="0" max="1" step="0.01" value="{{ config.effects.traction.volume }}" oninput="updateVal('traction_vol_disp', this.value, '%')" onchange="sendUpdate()">
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Axle Balance (Rear/Front)</span><span class="label-value" id="traction_bal_disp">{{ (config.effects.traction.balance|default(0.5)|float * 100)|int }}%</span></div>
+    <div class="help-row"><span>Rear (Left)</span><span>Front (Right)</span></div>
+    <input type="range" id="traction_bal" min="0" max="1" step="0.01" value="{{ config.effects.traction.balance|default(0.5) }}" oninput="updateVal('traction_bal_disp', this.value, '%')" onchange="sendUpdate()">
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Slip Threshold (Deadzone)</span><span class="label-value" id="traction_thresh_val">{{ config.effects.traction.threshold }}</span></div>
+    <div class="help-row"><span>0.01 (High Sensitivity)</span><span>0.20 (Safe)</span></div>
+    <input type="range" id="traction_thresh" min="0.01" max="0.20" step="0.01" value="{{ config.effects.traction.threshold }}" oninput="updateVal('traction_thresh_val', this.value)" onchange="sendUpdate()">
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Slip Sensitivity (Ramp-up)</span><span class="label-value" id="traction_sens_val">{{ config.effects.traction.sensitivity }}</span></div>
+    <div class="help-row"><span>0.05 (Aggressive)</span><span>0.50 (Smooth)</span></div>
+    <input type="range" id="traction_sens" min="0.05" max="0.50" step="0.01" value="{{ config.effects.traction.sensitivity }}" oninput="updateVal('traction_sens_val', this.value)" onchange="sendUpdate()">
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">ABS Offset (Brake Tolerance)</span><span class="label-value" id="traction_abs_disp">{{ config.effects.traction.abs_offset }}</span></div>
+    <div class="help-row"><span>0.00 (Raw)</span><span>0.20 (Weak ABS)</span></div>
+    <input type="range" id="traction_abs_offset" min="0.0" max="0.2" step="0.01" value="{{ config.effects.traction.abs_offset }}" oninput="updateVal('traction_abs_disp', this.value)" onchange="sendUpdate()">
     </div>
 
-        <div class="card">
-        <h2>Traction Loss effect <span><label class="switch"><input type="checkbox" id="traction_enabled" {% if config.effects.traction.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></span></h2>
-        <div style="display:flex; justify-content:space-between;"><label>Volume</label><span id="traction_vol_disp" class="val-label">{{ (config.effects.traction.volume|float * 100)|int }}%</span></div>
-        <input type="range" id="traction_vol" min="0" max="1.0" step="0.01" value="{{ config.effects.traction.volume }}" oninput="document.getElementById('traction_vol_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
+    <div class="switch-row"><span>Autocalibration</span><label class="switch"><input type="checkbox" id="traction_calib" {% if config.effects.traction.use_autocalib %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></div>
+    <div class="switch-row"><span>Priority Traction Effect</span><label class="switch"><input type="checkbox" id="traction_priority" {% if config.effects.traction.priority %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></div>
 
-        <div style="display:flex; justify-content:space-between;"><label>Slip Threshold (Deadzone)</label><span id="traction_thresh_val" class="val-label">{{ config.effects.traction.threshold }}</span></div>
-        <div class="help-labels"><span>0.01 (High Sensitivity)</span><span>0.20 (Safe)</span></div>
-        <input type="range" id="traction_thresh" min="0.01" max="0.20" step="0.01" value="{{ config.effects.traction.threshold }}" oninput="document.getElementById('traction_thresh_val').innerText=this.value" onchange="sendUpdate()">
-
-        <div style="margin-top:10px; display:flex; justify-content:space-between;"><label>Slip Sensitivity (Ramp-up)</label><span id="traction_sens_val" class="val-label">{{ config.effects.traction.sensitivity }}</span></div>
-        <div class="help-labels"><span>0.05 (Aggressive)</span><span>0.50 (Smooth)</span></div>
-        <input type="range" id="traction_sens" min="0.05" max="0.50" step="0.01" value="{{ config.effects.traction.sensitivity }}" oninput="document.getElementById('traction_sens_val').innerText=this.value" onchange="sendUpdate()">
-        <div style="margin-top:10px; display:flex; justify-content:space-between;">
-        <label>ABS Offset (Brake Tolerance)</label>
-        <span id="traction_abs_disp" class="val-label">{{ config.effects.traction.abs_offset }}</span>
-        </div>
-        <div class="help-labels"><span>0.00 (Raw)</span><span>0.20 (Weak ABS)</span></div>
-        <input type="range" id="traction_abs_offset" min="0.00" max="0.20" step="0.01"
-        value="{{ config.effects.traction.abs_offset }}"
-        oninput="document.getElementById('traction_abs_disp').innerText=this.value"
-        onchange="sendUpdate()">
-
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;"><label>Autocalibration</label><label class="switch"><input type="checkbox" id="traction_calib" {% if config.effects.traction.use_autocalib %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></div>
-
-        <div style="margin-top:15px; padding-top:10px; border-top:1px solid #333;">
-        <div style="display:flex; justify-content:space-between;"><label>Front Frequency (Lockup)</label><span id="traction_front_freq_disp" class="val-label">{{ config.effects.traction.front_freq }} Hz</span></div>
-        <input type="range" id="traction_front_freq" min="30" max="80" step="1" value="{{ config.effects.traction.front_freq }}" oninput="document.getElementById('traction_front_freq_disp').innerText=this.value+' Hz'" onchange="sendUpdate()">
-
-        <div style="display:flex; justify-content:space-between; margin-top:10px;"><label>Rear Frequency (Slip)</label><span id="traction_rear_freq_disp" class="val-label">{{ config.effects.traction.rear_freq }} Hz</span></div>
-        <input type="range" id="traction_rear_freq" min="25" max="70" step="1" value="{{ config.effects.traction.rear_freq }}" oninput="document.getElementById('traction_rear_freq_disp').innerText=this.value+' Hz'" onchange="sendUpdate()">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-        <label>Priority traction effect</label>
-        <label class="switch">
-        <input type="checkbox" id="traction_priority" {% if config.effects.traction.priority %}checked{% endif %} onchange="sendUpdate()">
-        <span class="slider"></span>
-        </label>
-        </div>
-        </div>
-        </div>
-
-    <div class="card">
-    <h2>Gear Shifts <span><label class="switch"><input type="checkbox" id="gear_enabled" {% if config.effects.gear_shift.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></span></h2>
-    <div style="display:flex; justify-content:space-between;"><label>Volume</label><span id="gear_vol_disp" class="val-label">{{ (config.effects.gear_shift.volume|float * 100)|int }}%</span></div>
-    <input type="range" id="gear_vol" min="0" max="1.0" step="0.01" value="{{ config.effects.gear_shift.volume }}" oninput="document.getElementById('gear_vol_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
-    <label>Axle Balance (Rear/Front)</label>
-    <div class="bal-labels"><span>Rear (Left)</span><span>Front (Right)</span></div>
-    <input type="range" id="gear_bal" min="0" max="1" step="0.05" value="{{ config.effects.gear_shift.balance }}" onchange="sendUpdate()">
+    <div style="display:flex; gap:20px; margin-top:15px; border-top: 1px solid #333; padding-top: 15px;">
+    <div class="setting-row" style="flex:1;">
+    <div class="label-row"><span class="label-title">Front Freq (Lockup)</span><span class="label-value" id="traction_front_freq_disp">{{ config.effects.traction.front_freq }} Hz</span></div>
+    <input type="range" id="traction_front_freq" min="30" max="200" step="1" value="{{ config.effects.traction.front_freq }}" oninput="updateVal('traction_front_freq_disp', this.value, ' Hz')" onchange="sendUpdate()">
     </div>
-
-    <div class="card">
-    <h2>Simulated Road Texture <span><label class="switch"><input type="checkbox" id="road_sim_enabled" {% if config.effects.sim_road.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></span></h2>
-
-    <div style="display:flex; justify-content:space-between;"><label>Surface Texture (Vol)</label><span id="road_texture_vol_disp" class="val-label">{{ (config.effects.sim_road.texture_volume|float * 100)|int if config.effects.sim_road.texture_volume is defined else 50 }}%</span></div>
-    <input type="range" id="road_texture_vol" min="0" max="1.0" step="0.01" value="{{ config.effects.sim_road.texture_volume if config.effects.sim_road.texture_volume is defined else 0.5 }}" oninput="document.getElementById('road_texture_vol_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
-
-    <div style="display:flex; justify-content:space-between;"><label>Surface Frequency</label><span id="road_texture_freq_disp" class="val-label">{{ config.effects.sim_road.texture_freq if config.effects.sim_road.texture_freq is defined else 30 }} Hz</span></div>
-    <input type="range" id="road_texture_freq" min="20" max="60" step="1" value="{{ config.effects.sim_road.texture_freq if config.effects.sim_road.texture_freq is defined else 30 }}" oninput="document.getElementById('road_texture_freq_disp').innerText=this.value+' Hz'" onchange="sendUpdate()">
-
-    <div style="display:flex; justify-content:space-between;"><label>Road Effects (Vol)</label><span id="road_sim_vol_disp" class="val-label">{{ (config.effects.sim_road.volume|float * 100)|int }}%</span></div>
-    <input type="range" id="road_sim_vol" min="0" max="1.0" step="0.01" value="{{ config.effects.sim_road.volume }}" oninput="document.getElementById('road_sim_vol_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
-
-    <div style="display:flex; justify-content:space-between;"><label>Surface Roughness</label><span id="road_rough_val" class="val-label">{{ config.effects.sim_road.roughness }}</span></div>
-    <div class="help-labels"><span>Silk Smooth</span><span>Bumpy / Cobblestone</span></div>
-    <input type="range" id="road_sim_rough" min="0.0" max="1.0" step="0.01" value="{{ config.effects.sim_road.roughness }}" oninput="document.getElementById('road_rough_val').innerText=this.value" onchange="sendUpdate()">
-    <p style="color:#666; font-size:0.65rem; margin-top:10px; text-align:center;">Speed-adaptive axle delay (2.75m wheelbase logic applied).</p>
-    </div>
-    <div class="card">
-    <h2>Collision Impact <span><label class="switch"><input type="checkbox" id="obs_enabled" {% if config.effects.obstacle_impact.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></span></h2>
-
-    <div style="display:flex; justify-content:space-between;">
-    <label>Volume</label>
-    <span id="obs_vol_disp" class="val-label">{{ (config.effects.obstacle_impact.volume|float * 100)|int }}%</span>
-    </div>
-    <input type="range" id="obs_vol" min="0" max="1.0" step="0.1" value="{{ config.effects.obstacle_impact.volume }}"
-    oninput="document.getElementById('obs_vol_disp').innerText=Math.round(this.value*100)+'%'" onchange="sendUpdate()">
-
-    <div style="display:flex; justify-content:space-between; margin-top:10px;">
-    <label>Sensitivity</label>
-    <span id="obs_thresh_disp" class="val-label">{{ config.effects.obstacle_impact.threshold }}</span>
-    </div>
-    <input type="range" id="obs_thresh" min="10.0" max="200.0" step="5.0" value="{{ config.effects.obstacle_impact.threshold }}"
-    oninput="document.getElementById('obs_thresh_disp').innerText=this.value" onchange="sendUpdate()">
-    <div style="display:flex; justify-content:space-between; margin-top:10px;"><label>Impact Tone (Hz)</label><span id="obs_freq_disp" class="val-label">{{ config.effects.obstacle_impact.freq }} Hz</span></div>
-    <input type="range" id="obs_freq" min="25" max="60" step="1" value="{{ config.effects.obstacle_impact.get('freq', 30) }}" oninput="document.getElementById('obs_freq_disp').innerText=this.value+' Hz'" onchange="sendUpdate()">
-
-    <p style="color:#666; font-size:0.65rem;">Triggers heavy thumps on front/rear collisions based on G-spikes.</p>
+    <div class="setting-row" style="flex:1;">
+    <div class="label-row"><span class="label-title">Rear Freq (Slip)</span><span class="label-value" id="traction_rear_freq_disp">{{ config.effects.traction.rear_freq }} Hz</span></div>
+    <input type="range" id="traction_rear_freq" min="25" max="200" step="1" value="{{ config.effects.traction.rear_freq }}" oninput="updateVal('traction_rear_freq_disp', this.value, ' Hz')" onchange="sendUpdate()">
     </div>
     </div>
     </div>
     </div>
 
-    <div class="nav-dots">
-    <div id="dot1" class="dot active"></div>
-    <div id="dot2" class="dot"></div>
-    <div id="dot3" class="dot"></div>
+    <div id="tab-suspension" class="settings-content" style="display:none;">
+    <div class="md-card">
+    <div class="section-header">
+    <span class="section-title">Suspension</span>
+    <label class="switch"><input type="checkbox" id="susp_enabled" {% if config.effects.suspension.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label>
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title" style="color:#f44336">Road Vol (Red)</span><span class="label-value" id="susp_road_vol_disp">{{ (config.effects.suspension.road_volume|float * 100)|int }}%</span></div>
+    <input type="range" id="susp_road_vol" min="0" max="1" step="0.01" value="{{ config.effects.suspension.road_volume }}" oninput="updateVal('susp_road_vol_disp', this.value, '%')" onchange="sendUpdate()">
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title" style="color:#007acc">Impact Vol (Blue)</span><span class="label-value" id="susp_impact_vol_disp">{{ (config.effects.suspension.impact_volume|float * 100)|int }}%</span></div>
+    <input type="range" id="susp_impact_vol" min="0" max="1" step="0.01" value="{{ config.effects.suspension.impact_volume }}" oninput="updateVal('susp_impact_vol_disp', this.value, '%')" onchange="sendUpdate()">
+    </div>
+
+    <div style="border-top: 1px solid #333; margin-top: 15px; padding-top: 15px;">
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Road Sensitivity</span><span class="label-value" id="susp_thresh_val">{{ config.effects.suspension.threshold }}</span></div>
+    <div class="help-row"><span>More road details</span><span>Less road details</span></div>
+    <input type="range" id="susp_thresh" min="0.0" max="1.0" step="0.01" value="{{ config.effects.suspension.threshold }}" oninput="updateVal('susp_thresh_val', this.value)" onchange="sendUpdate()">
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Impact Sensitivity</span><span class="label-value" id="susp_impact_thresh_val">{{ config.effects.suspension.impact_threshold }}</span></div>
+    <div class="help-row"><span>Less curb details</span><span>More curb details</span></div>
+    <input type="range" id="susp_impact_thresh" min="0.5" max="100.0" step="0.5" value="{{ config.effects.suspension.impact_threshold }}" oninput="updateVal('susp_impact_thresh_val', this.value)" onchange="sendUpdate()">
+    </div>
+    </div>
+
+    <div class="setting-row" style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;">
+    <div class="label-row"><span class="label-title">Axle Balance (Rear/Front)</span><span class="label-value" id="susp_bal_disp">{{ (config.effects.suspension.balance|float * 100)|int }}%</span></div>
+    <div class="help-row"><span>Rear (Left)</span><span>Front (Right)</span></div>
+    <input type="range" id="susp_bal" min="0" max="1" step="0.05" value="{{ config.effects.suspension.balance }}" oninput="updateVal('susp_bal_disp', this.value, '%')" onchange="sendUpdate()">
+    </div>
+    <div class="switch-row"><span>Priority Suspension over Engine</span><label class="switch"><input type="checkbox" id="susp_priority" {% if config.effects.suspension.priority %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label></div>
+    </div>
+    </div>
+
+    <div id="tab-simroad" class="settings-content" style="display:none;">
+    <div class="md-card">
+    <div class="section-header">
+    <span class="section-title">Simulated Road Texture</span>
+    <label class="switch"><input type="checkbox" id="road_sim_enabled" {% if config.effects.sim_road.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label>
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Surface Texture (Vol)</span><span class="label-value" id="road_texture_vol_disp">{{ (config.effects.sim_road.texture_volume|float * 100)|int }}%</span></div>
+    <input type="range" id="road_texture_vol" min="0" max="1" step="0.01" value="{{ config.effects.sim_road.texture_volume }}" oninput="updateVal('road_texture_vol_disp', this.value, '%')" onchange="sendUpdate()">
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Surface Frequency</span><span class="label-value" id="road_texture_freq_disp">{{ config.effects.sim_road.texture_freq }} Hz</span></div>
+    <input type="range" id="road_texture_freq" min="20" max="100" step="1" value="{{ config.effects.sim_road.texture_freq }}" oninput="updateVal('road_texture_freq_disp', this.value, ' Hz')" onchange="sendUpdate()">
+    </div>
+
+    <div style="border-top: 1px solid #333; margin-top: 15px; padding-top: 15px;">
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Road Effects (Vol)</span><span class="label-value" id="road_sim_vol_disp">{{ (config.effects.sim_road.volume|float * 100)|int }}%</span></div>
+    <input type="range" id="road_sim_vol" min="0" max="1" step="0.01" value="{{ config.effects.sim_road.volume }}" oninput="updateVal('road_sim_vol_disp', this.value, '%')" onchange="sendUpdate()">
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Surface Roughness</span><span class="label-value" id="road_sim_rough_val">{{ config.effects.sim_road.roughness }}</span></div>
+    <div class="help-row"><span>Silk Smooth</span><span>Bumpy / Cobblestone</span></div>
+    <input type="range" id="road_sim_rough" min="0.0" max="1.0" step="0.01" value="{{ config.effects.sim_road.roughness }}" oninput="updateVal('road_sim_rough_val', this.value)" onchange="sendUpdate()">
+    </div>
+    </div>
+    <p style="color:#888; font-size:0.75rem; margin-top:15px; text-align:center; font-style:italic;">Speed-adaptive axle delay (2.75m wheelbase logic applied).</p>
+    </div>
+    </div>
+
+    <div id="tab-collision" class="settings-content" style="display:none;">
+    <div class="md-card">
+    <div class="section-header">
+    <span class="section-title">Collision Impact</span>
+    <label class="switch"><input type="checkbox" id="obs_enabled" {% if config.effects.obstacle_impact.enabled %}checked{% endif %} onchange="sendUpdate()"><span class="slider"></span></label>
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Volume</span><span class="label-value" id="obs_vol_disp">{{ (config.effects.obstacle_impact.volume|float * 100)|int }}%</span></div>
+    <input type="range" id="obs_vol" min="0" max="1" step="0.01" value="{{ config.effects.obstacle_impact.volume }}" oninput="updateVal('obs_vol_disp', this.value, '%')" onchange="sendUpdate()">
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Sensitivity (G-Force)</span><span class="label-value" id="obs_thresh_val">{{ config.effects.obstacle_impact.threshold }}</span></div>
+    <input type="range" id="obs_thresh" min="10" max="200" step="5" value="{{ config.effects.obstacle_impact.threshold }}" oninput="updateVal('obs_thresh_val', this.value)" onchange="sendUpdate()">
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Impact Tone</span><span class="label-value" id="obs_freq_disp">{{ config.effects.obstacle_impact.freq }} Hz</span></div>
+    <input type="range" id="obs_freq" min="25" max="100" step="1" value="{{ config.effects.obstacle_impact.freq }}" oninput="updateVal('obs_freq_disp', this.value, ' Hz')" onchange="sendUpdate()">
+    </div>
+    <p style="color:#888; font-size:0.75rem; margin-top:15px; font-style:italic;">Triggers heavy thumps on front/rear collisions based on G-spikes.</p>
+    </div>
+    </div>
+
+    <div id="tab-tiretemp" class="settings-content" style="display:none;">
+    <div class="md-card">
+    <div class="section-header"><span class="section-title">Tire Temp Config</span></div>
+    <div style="display:flex; height:20px; width:100%; margin-bottom:5px; border-radius:4px; overflow:hidden;">
+    <div style="flex:1; background:#007acc; display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:white; font-weight:bold;">COLD</div>
+    <div style="flex:1; background:#4caf50; display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:white; font-weight:bold;">OPTIMAL</div>
+    <div style="flex:1; background:#f44336; display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:white; font-weight:bold;">HOT</div>
+    </div>
+    <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:25px; color:#888;">
+    <span id="tt_low_disp">--°</span><span id="tt_mid_disp" style="color:#4caf50; font-weight:bold;">--°</span><span id="tt_high_disp">--°</span>
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Base Temp (Ideal Middle)</span><span class="label-value" id="tt_base_disp">{{ config.effects.tire_temp.base }}°</span></div>
+    <input type="range" id="tt_base" min="40" max="110" step="1" value="{{ config.effects.tire_temp.base }}" oninput="updateTireUI();" onchange="sendUpdate()">
+    </div>
+    <div class="setting-row">
+    <div class="label-row"><span class="label-title">Window Spread (Width of Green Zone)</span><span class="label-value" id="tt_spread_disp">{{ config.effects.tire_temp.spread }}°</span></div>
+    <input type="range" id="tt_spread" min="4" max="30" step="1" value="{{ config.effects.tire_temp.spread }}" oninput="updateTireUI();" onchange="sendUpdate()">
+    </div>
+    </div>
+    </div>
+    </div> <div id="dashboard1" class="screen">
+    <div class="dash-container">
+    <div class="top-row-container">
+    <div class="back-btn-box" onclick="goToScreen('home-screen')">&larr;</div>
+    <div class="top-rpm-bar">
+    <script>for(let i=0; i<20; i++){ document.write(`<div class="rpm-seg inactive"></div>`); }</script>
+    </div>
+    <div class="speed-box-large">
+    <span class="speed-val-large" id="race-speed">0</span>
+    <span class="speed-unit-small" id="tele-speed-unit">km/h</span>
+    </div>
+    </div>
+
+    <div class="race-grid">
+    <div class="tire-grid">
+    <div class="tire-box"><span class="tire-label">FL</span><span id="race_temp_FL" class="tire-temp">--</span></div>
+    <div class="tire-box"><span class="tire-label">FR</span><span id="race_temp_FR" class="tire-temp">--</span></div>
+    <div class="tire-box"><span class="tire-label">RL</span><span id="race_temp_RL" class="tire-temp">--</span></div>
+    <div class="tire-box"><span class="tire-label">RR</span><span id="race_temp_RR" class="tire-temp">--</span></div>
+    </div>
+
+    <div class="center-panel">
+    <div class="gear-val" id="race-gear" style="font-size: 10rem;">N</div>
+    </div>
+
+    <div class="right-panel">
+    <div class="info-box" style="flex:1;">
+    <span class="info-label">CURRENT LAP</span>
+    <div class="race-box-large" style="height: 100%; border:none; background:transparent;">
+    <div id="race_current_lap" style="font-family: monospace; font-size: 1.5rem; font-weight: bold; text-align:right; width:100%;">-</div>
+    </div>
+    </div>
+    <div class="info-box" style="flex:1; position: relative;">
+    <span class="info-label">LAST LAP</span>
+    <div id="trend_arrow" style="position: absolute; left: 10px; top: 50%; transform: translateY(-30%); font-size: 2rem; display: none;">⬇</div>
+    <div class="race-box-large" style="height: 100%; border:none; background:transparent;">
+    <div id="race_last_lap" style="font-family: monospace; font-size: 1.5rem; font-weight: bold; text-align:right; width:100%;">--:--.---</div>
+    </div>
+    </div>
+    <div class="info-box" style="flex:1;">
+    <span class="info-label">BEST LAP</span>
+    <div class="race-box-large" style="height: 100%; border:none; background:transparent;">
+    <div id="race_best_lap" style="font-family: monospace; font-size: 1.5rem; font-weight: bold; color:#00e676; text-align:right; width:100%;">--:--.---</div>
+    </div>
+    </div>
+    </div>
+    </div>
+
+    <div class="bottom-panel">
+    <div class="fuel-box">
+    <span class="info-label">FUEL</span>
+    <span class="fuel-val" id="race_fuel_val">0.0 L</span>
+    </div>
+    <div class="fuel-box">
+    <span class="info-label">TANK %</span>
+    <span class="fuel-val" id="race_fuel_pct" style="color:white;">0%</span>
+    </div>
+    <div class="fuel-box" id="laps_rem_box">
+    <span class="info-label">LAPS REM.</span>
+    <span class="fuel-val" id="race_laps_rem">CALC...</span>
+    </div>
+    </div>
+    </div>
+    </div>
+
+    <div id="dashboard2" class="screen">
+    <div class="dash-container">
+    <div class="top-row-container">
+    <div class="back-btn-box" onclick="goToScreen('home-screen')">&larr;</div>
+    <div class="top-rpm-bar">
+    <script>for(let i=0; i<20; i++){ document.write(`<div class="rpm-seg inactive"></div>`); }</script>
+    </div>
+    <div class="speed-box-large">
+    <span class="speed-val-large" id="tele-speed">0</span>
+    <span class="speed-unit-small" id="race-speed-unit">km/h</span>
+    </div>
+    </div>
+
+    <div class="race-grid" style="flex: 1; min-height: 0;">
+    <div class="tire-grid">
+    <div class="tire-box"><span class="tire-temp" id="temp_FL">--</span></div>
+    <div class="tire-box"><span class="tire-temp" id="temp_FR">--</span></div>
+    <div class="tire-box"><span class="tire-temp" id="temp_RL">--</span></div>
+    <div class="tire-box"><span class="tire-temp" id="temp_RR">--</span></div>
+    </div>
+
+    <div class="center-panel">
+    <div class="gear-val" id="gear_disp" style="font-size: 10rem;">N</div>
+    </div>
+
+    <div class="right-panel">
+    <div class="info-box" style="flex:1;">
+    <span class="info-label">CURRENT</span>
+    <div class="race-box-large" style="height: 100%; border:none; background:transparent;">
+    <div id="tele_current_lap" style="font-family: monospace; font-size: 1.5rem; font-weight: bold; text-align:right; width:100%;">-</div>
+    </div>
+    </div>
+    <div class="info-box" style="flex:1;">
+    <span class="info-label">BEST LAP</span>
+    <div class="race-box-large" style="height: 100%; border:none; background:transparent;">
+    <div id="tele_best_lap" style="font-family: monospace; font-size: 1.5rem; font-weight: bold; color:#00e676; text-align:right; width:100%;">--:--.---</div>
+    </div>
+    </div>
+    <div class="info-box" style="flex:1; display:flex; flex-direction:column; justify-content:space-evenly;">
+    <div style="display:flex; justify-content:space-between; width:100%;">
+    <span class="info-label">FUEL REM.</span>
+    <span id="tele_fuel_val" style="font-weight:bold; color:#ff9800; font-size: 1.1rem;">0.0 L</span>
+    </div>
+    <div style="display:flex; justify-content:space-between; width:100%;">
+    <span class="info-label">LAPS LEFT</span>
+    <span id="tele_laps_rem" style="font-weight:bold; color:#ff9800; font-size: 1.1rem;">CALC...</span>
+    </div>
+    </div>
+    </div>
+    </div>
+
+    <div class="telemetry-chart-container" style="height: 35%; margin-top: 15px;">
+    <div style="position:absolute; top:5px; left:10px; font-size:0.7rem; font-weight:bold; display:flex; gap:15px; z-index:10; background:rgba(0,0,0,0.5); padding:2px 5px; border-radius:4px;">
+    <span style="color:#4caf50">GAS</span>
+    <span style="color:#f44336">BRAKE</span>
+    <span style="color:#ffeb3b">ABS/TC</span>
+    </div>
+    <canvas id="telemetryCanvas"></canvas>
+    </div>
+    </div>
     </div>
 
     <script>
-    /* --- CONSTANTS AND STATE --- */
+    /* --- STATE VARIABLES --- */
+
     let isRunning = false;
     let wakeLock = null;
-    const tuneCanvas = document.getElementById('tuneCanvas'); const tuneCtx = tuneCanvas.getContext('2d');
-    const pedalCanvas = document.getElementById('pedalCanvas'); const pedalCtx = pedalCanvas.getContext('2d');
+    let currentProfileId = '{{ config.active_profile_id }}';
+
+    // Canvas Setup (Dash 2)
+    const dash2Canvas = document.getElementById('telemetryCanvas');
+    const dash2Ctx = dash2Canvas ? dash2Canvas.getContext('2d') : null;
     const statusIndicator = document.getElementById('status_indicator');
-    const tuneHist = []; const pedalHist = []; const maxPts = 100;
+    const pedalHist = []; const maxPts = 100;
+    let isFetching = false;
 
-    /* --- Toogle theme --- */
-    function toggleTheme() {
-        const isLight = document.getElementById('theme_toggle').checked;
-        document.body.classList.toggle('light-mode', isLight);
-        sendUpdate(); // Gemmer valget i din config.json
+    /* --- NAVIGATION --- */
+
+    function goToScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+
+        // NY LOGIK: Korrekt mapping af skærme
+        let page = 0; // 0 = Home Screen
+        if(screenId === 'dashboard1') page = 1;
+        if(screenId === 'settings-screen') page = 2;
+        if(screenId === 'dashboard2') page = 3;
+
+        localStorage.setItem('lastGTPage', page);
         }
 
-    /* --- GRAPH DRAWING ENGINE --- */
-    function draw(ctx, canvas, hist, series, maxVal) {
-        if(!canvas || !ctx) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function goToSettings() { goToScreen('settings-screen'); openTab('general'); }
 
-    // Baggrunds-gitre
-    ctx.strokeStyle = '#222'; ctx.beginPath();
-    for(let i=1; i<4; i++){ let y = canvas.height - (canvas.height/4)*i; ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
-    ctx.stroke();
+    function openTab(tabName) {
+            // 1. Fjern den blå streg fra alle knapper
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
 
-    // Tegn hver serie i arrayet
-    series.forEach(set => {
-        ctx.strokeStyle = set.c; ctx.lineWidth = 1.5; ctx.beginPath();
-        hist.forEach((p, i) => {
-            let x = (i / (maxPts-1)) * canvas.width;
-            let y = canvas.height - ((p[set.k] || 0) / maxVal) * canvas.height;
-            if(i===0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-            });
-        ctx.stroke();
-        });
-        }
-
-        /* --- SCREEN WAKE LOCK LOGIC --- */
-        async function toggleWakeLock() {
-            const isEnabled = document.getElementById('wake_lock_toggle').checked;
-            if (isEnabled) {
-                try { if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); } } catch (err) { document.getElementById('wake_lock_toggle').checked = false; }
-                } else if (wakeLock) { await wakeLock.release(); wakeLock = null; }
+            // 2. Find præcis den knap, der hører til tabName, og giv den den blå streg
+            const buttons = document.querySelectorAll('.tab-btn');
+            for (let btn of buttons) {
+                if (btn.getAttribute('onclick').includes(`'${tabName}'`)) {
+                    btn.classList.add('active');
+                    break;
+                }
             }
 
-            /* --- ENGINE START/STOP --- */
-            async function toggleEngine() {
-                const ps5_ip = document.getElementById('ps5_ip').value;
-                const action = isRunning ? 'stop' : 'start';
-                try { await fetch('/api/toggle', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action: action, ip: ps5_ip}) }); } catch(err) { console.error("Toggle failed:", err); }
-                }
+            // 3. Skjul alt indhold
+            document.querySelectorAll('.settings-content').forEach(el => el.style.display = 'none');
 
-            /* --- HARDWARE TEST SIGNAL --- */
-            async function testShaker(side) { if(isRunning) return; await fetch('/api/test', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({side:side})}); }
+            // 4. Vis den valgte fane
+            const tab = document.getElementById('tab-' + tabName);
+            if(tab) tab.style.display = 'block';
+        }
 
-        /* --- REAL-TIME SETTINGS SYNC --- */
-        async function sendUpdate() {
-            try {
-                const payload = {
-                    ps5_ip: document.getElementById('ps5_ip').value,
-                    master_volume: document.getElementById('master_vol').value,
-                    output_headroom: document.getElementById('output_headroom').value,
-                    units: document.getElementById('units').value,
-                    shaker_mode: parseInt(document.getElementById('shaker_mode').value),
-                    allow_replays: document.getElementById('allowReplays').checked,
-                    audio: {
-                        device_index: parseInt(document.getElementById('audio_device').value),
-                        sample_rate: parseInt(document.getElementById('sample_rate').value)
-                        },
-                    rpm: {
-                        enabled: document.getElementById('rpm_enabled').checked,
-                        volume: document.getElementById('rpm_vol').value,
-                        balance: document.getElementById('rpm_bal').value,
-                        profile: document.getElementById('rpm_profile').value,
-                        min_freq: document.getElementById('rpm_min').value,
-                        max_freq: document.getElementById('rpm_max').value,
-                        pit_boost: document.getElementById('rpm_pit_boost').value
-                        },
-                    suspension: {
-                        enabled: document.getElementById('susp_enabled').checked,
-                        road_volume: document.getElementById('susp_road_vol').value,
-                        impact_volume: document.getElementById('susp_impact_vol').value,
-                        threshold: document.getElementById('susp_thresh').value,
-                        impact_threshold: document.getElementById('susp_impact_thresh').value,
-                        balance: document.getElementById('susp_bal').value,
-                        priority: document.getElementById('susp_priority').checked
-                        },
-                    traction: {
-                        enabled: document.getElementById('traction_enabled').checked,
-                        volume: document.getElementById('traction_vol').value,
-                        threshold: document.getElementById('traction_thresh').value,
-                        sensitivity: document.getElementById('traction_sens').value,
-                        abs_offset: document.getElementById('traction_abs_offset').value,
-                        use_autocalib: document.getElementById('traction_calib').checked,
-                        front_freq: document.getElementById('traction_front_freq').value,
-                        rear_freq: document.getElementById('traction_rear_freq').value,
-                        priority: document.getElementById('traction_priority').checked
-                        },
-                    gear_shift: {
-                        enabled: document.getElementById('gear_enabled').checked,
-                        volume: document.getElementById('gear_vol').value,
-                        balance: document.getElementById('gear_bal').value
-                        },
-                    sim_road: {
-                        enabled: document.getElementById('road_sim_enabled').checked,
-                        texture_volume: document.getElementById('road_texture_vol').value,
-                        texture_freq: document.getElementById('road_texture_freq').value,
-                        volume: document.getElementById('road_sim_vol').value,
-                        roughness: document.getElementById('road_sim_rough').value
-                        },
-                    obstacle_impact: {
-                        enabled: document.getElementById('obs_enabled').checked,
-                        volume: document.getElementById('obs_vol').value,
-                        threshold: document.getElementById('obs_thresh').value,
-                        freq: document.getElementById('obs_freq').value
+    /* --- UI UPDATERS --- */
+    function updateVal(id, val, suffix) {
+        const el = document.getElementById(id);
+        if(el) el.innerText = (suffix === '%' ? Math.round(val * 100) : val) + (suffix || '');
+        }
+
+    function updateTireUI() {
+        const baseEl = document.getElementById('tt_base');
+        const spreadEl = document.getElementById('tt_spread');
+        if(!baseEl || !spreadEl) return;
+    const base = parseFloat(baseEl.value); const spread = parseFloat(spreadEl.value);
+    const baseDisp = document.getElementById('tt_base_disp'); if(baseDisp) baseDisp.innerText = base + "°";
+    const spreadDisp = document.getElementById('tt_spread_disp'); if(spreadDisp) spreadDisp.innerText = spread + "°";
+    const low = Math.round(base - (spread/2)); const high = Math.round(base + (spread/2));
+    const lowDisp = document.getElementById('tt_low_disp'); if(lowDisp) lowDisp.innerText = "< " + low + "°";
+    const midDisp = document.getElementById('tt_mid_disp'); if(midDisp) midDisp.innerText = base + "°";
+    const highDisp = document.getElementById('tt_high_disp'); if(highDisp) highDisp.innerText = "> " + high + "°";
+    }
+
+    /* --- DATA SYNC (SEND TO PYTHON) --- */
+    async function sendUpdate() {
+        const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : 0;
+        const getCheck = (id) => document.getElementById(id) ? document.getElementById(id).checked : false;
+        try {
+            const payload = {
+                ps5_ip: getVal('ps5_ip'),
+                master_volume: getVal('master_volume'),
+                output_headroom: getVal('output_headroom'),
+                units: getVal('units'),
+                shaker_mode: parseInt(getVal('shaker_mode')),
+                swap_channels: getCheck('swap_channels'),
+                allow_replays: getCheck('allowReplays'),
+                audio: { device_index: parseInt(getVal('audio_device')), sample_rate: parseInt(getVal('sample_rate')) },
+                rpm: { enabled: getCheck('rpm_enabled'), volume: getVal('rpm_vol'), balance: getVal('rpm_bal'), profile: getVal('rpm_profile'), min_freq: getVal('rpm_min'), max_freq: getVal('rpm_max'), pit_boost: getVal('rpm_pit_boost') },
+                gear_shift: { enabled: getCheck('gear_enabled'), volume: getVal('gear_vol'), balance: getVal('gear_bal') },
+                traction: { enabled: getCheck('traction_enabled'), volume: getVal('traction_vol'), balance: getVal('traction_bal'), threshold: getVal('traction_thresh'), sensitivity: getVal('traction_sens'), abs_offset: getVal('traction_abs_offset'), use_autocalib: getCheck('traction_calib'), front_freq: getVal('traction_front_freq'), rear_freq: getVal('traction_rear_freq'), priority: getCheck('traction_priority') },
+                suspension: { enabled: getCheck('susp_enabled'), road_volume: getVal('susp_road_vol'), impact_volume: getVal('susp_impact_vol'), threshold: getVal('susp_thresh'), impact_threshold: getVal('susp_impact_thresh'), balance: getVal('susp_bal'), priority: getCheck('susp_priority') },
+                sim_road: { enabled: getCheck('road_sim_enabled'), texture_volume: getVal('road_texture_vol'), texture_freq: getVal('road_texture_freq'), volume: getVal('road_sim_vol'), roughness: getVal('road_sim_rough') },
+                obstacle_impact: { enabled: getCheck('obs_enabled'), volume: getVal('obs_vol'), threshold: getVal('obs_thresh'), freq: getVal('obs_freq') },
+                tire_temp: { enabled: true, base: getVal('tt_base'), spread: getVal('tt_spread') }
+                };
+            await fetch('/api/update', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+            } catch(e) { console.error("Update failed", e); }
+            }
+
+            /* --- PROFILE MANAGEMENT --- */
+            async function switchProfile(id) {
+                currentProfileId = id;
+                try {
+                    const res = await fetch('/api/profiles/select', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id: id})});
+                    const data = await res.json();
+                    if(data.status === 'ok') {
+                        document.querySelectorAll('.p-btn').forEach(btn => btn.classList.remove('active'));
+                        document.getElementById('btn-p' + id).classList.add('active');
+                        document.getElementById('profile-name-input').value = data.config.profiles[id].name;
+                        syncUIWithNewProfile(data.config);
                         }
-                    };
-                    await fetch('/api/update', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
-                    } catch (err) {}
+                    } catch(e) {}
                     }
-                    /* --- PROFILE MANAGEMENT --- */
-                    let currentProfileId = '{{ config.active_profile_id }}';
 
-                    async function switchProfile(id) {
-                        currentProfileId = id;
-                        try {
-                            const response = await fetch('/api/profiles/select', {
-                                method: 'POST',
-                                headers: {'Content-Type': 'application/json'},
-                                body: JSON.stringify({id: id})
-                                });
-                            const data = await response.json();
+                    function updateProfileName(newName) { fetch('/api/profiles/rename', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id: currentProfileId, name: newName})}); }
 
-                            if(data.status === 'ok') {
-                                // 1. Marker den aktive knap i UI
-                                document.querySelectorAll('.p-btn').forEach(btn => btn.classList.remove('active'));
-                                document.getElementById('btn-p' + id).classList.add('active');
+                    function syncUIWithNewProfile(config) {
+                        const ef = config.effects;
+                        const setVal = (id, val, dispId, suffix) => { const el = document.getElementById(id); if(el) { el.value = val; if(dispId) updateVal(dispId, val, suffix); } };
+                        const setCheck = (id, val) => { const el = document.getElementById(id); if(el) el.checked = val; };
 
-                                // 2. Opdater tekstfeltet med profilnavnet
-                                document.getElementById('profile-name-input').value = data.config.profiles[id].name;
+                        setVal('master_volume', config.master_volume, 'master_volume_disp', '%');
+                        setVal('output_headroom', config.output_headroom, 'output_headroom_disp', '%');
+                        if(document.getElementById('units')) document.getElementById('units').value = config.units;
+                        setCheck('allowReplays', config.allow_replays);
+                        setCheck('swap_channels', config.swap_channels);
+                        if(document.getElementById('shaker_mode_toggle')) { document.getElementById('shaker_mode_toggle').checked = (config.shaker_mode === 1); document.getElementById('shaker_mode').value = config.shaker_mode; }
 
-                                // 3. Opdater alle skydere og kontakter på Side 3
-                                syncUIWithNewProfile(data.config);
+                        // RPM
+                        setCheck('rpm_enabled', ef.rpm.enabled); setVal('rpm_vol', ef.rpm.volume, 'rpm_val_disp', '%'); setVal('rpm_bal', ef.rpm.balance, 'rpm_bal_disp', '%');
+                        if(document.getElementById('rpm_profile')) document.getElementById('rpm_profile').value = ef.rpm.profile;
+                        setVal('rpm_min', ef.rpm.min_freq, 'rpm_min_disp', ' Hz'); setVal('rpm_max', ef.rpm.max_freq, 'rpm_max_disp', ' Hz'); setVal('rpm_pit_boost', ef.rpm.pit_boost, 'rpm_pit_boost_disp', '%');
 
-                                console.log("Profile " + id + " loaded");
+                        // Suspension
+                        setCheck('susp_enabled', ef.suspension.enabled); setVal('susp_road_vol', ef.suspension.road_volume, 'susp_road_vol_disp', '%'); setVal('susp_impact_vol', ef.suspension.impact_volume, 'susp_impact_vol_disp', '%');
+                        setVal('susp_thresh', ef.suspension.threshold, 'susp_thresh_val', ''); setVal('susp_impact_thresh', ef.suspension.impact_threshold, 'susp_impact_thresh_val', ''); setVal('susp_bal', ef.suspension.balance, 'susp_bal_disp', '%'); setCheck('susp_priority', ef.suspension.priority);
+
+                        // Traction
+                        setCheck('traction_enabled', ef.traction.enabled); setVal('traction_vol', ef.traction.volume, 'traction_vol_disp', '%'); setVal('traction_bal', ef.traction.balance || 0.5, 'traction_bal_disp', '%');
+                        setVal('traction_thresh', ef.traction.threshold, 'traction_thresh_val', ''); setVal('traction_sens', ef.traction.sensitivity, 'traction_sens_val', ''); setVal('traction_abs_offset', ef.traction.abs_offset, 'traction_abs_disp', '');
+                        setCheck('traction_calib', ef.traction.use_autocalib); setVal('traction_front_freq', ef.traction.front_freq, 'traction_front_freq_disp', ' Hz'); setVal('traction_rear_freq', ef.traction.rear_freq, 'traction_rear_freq_disp', ' Hz'); setCheck('traction_priority', ef.traction.priority);
+
+                        // Gear
+                        setCheck('gear_enabled', ef.gear_shift.enabled); setVal('gear_vol', ef.gear_shift.volume, 'gear_vol_disp', '%'); setVal('gear_bal', ef.gear_shift.balance, 'gear_bal_disp', '%');
+
+                        // Sim Road
+                        setCheck('road_sim_enabled', ef.sim_road.enabled); setVal('road_texture_vol', ef.sim_road.texture_volume, 'road_texture_vol_disp', '%'); setVal('road_texture_freq', ef.sim_road.texture_freq, 'road_texture_freq_disp', ' Hz');
+                        setVal('road_sim_vol', ef.sim_road.volume, 'road_sim_vol_disp', '%'); setVal('road_sim_rough', ef.sim_road.roughness, 'road_sim_rough_val', '');
+
+                        // Collision
+                        setCheck('obs_enabled', ef.obstacle_impact.enabled); setVal('obs_vol', ef.obstacle_impact.volume, 'obs_vol_disp', '%'); setVal('obs_thresh', ef.obstacle_impact.threshold, 'obs_thresh_val', ''); setVal('obs_freq', ef.obstacle_impact.freq, 'obs_freq_disp', ' Hz');
+
+                        // Tire
+                        setVal('tt_base', ef.tire_temp.base, 'tt_base_disp', '°'); setVal('tt_spread', ef.tire_temp.spread, 'tt_spread_disp', '°');
+                        updateTireUI();
+
+                        // Re-apply Wake Lock if needed
+                        setCheck('wake_lock_toggle', config.keep_awake);
+                        if (config.keep_awake) toggleWakeLock();
+                        }
+
+                    /* --- SYSTEM ACTIONS --- */
+                    async function toggleEngine() { const action = isRunning ? 'stop' : 'start'; const ip = document.getElementById('ps5_ip').value; await fetch('/api/toggle', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action: action, ip: ip})}); }
+                    async function testShaker(side) { if(isRunning) return; await fetch('/api/test', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({side:side})}); }
+                    async function resetDefaults() { if(confirm("Reset all profiles to default?")) { await fetch('/api/reset', {method:'POST'}); location.reload(); } }
+
+                    /* --- ROBUST WAKE LOCK (iPhone & Android) --- */
+                    async function toggleWakeLock() {
+                        const isEnabled = document.getElementById('wake_lock_toggle').checked;
+                        if (isEnabled) {
+                            if ('wakeLock' in navigator) {
+                                try { wakeLock = await navigator.wakeLock.request('screen'); }
+                                catch (err) { console.error(`${err.name}, ${err.message}`); }
                                 }
-                            } catch (err) { console.error("Profile switch failed:", err); }
+                            } else {
+                                if (wakeLock !== null) { await wakeLock.release(); wakeLock = null; }
+                                }
                             }
+                            document.addEventListener('visibilitychange', async () => { if (wakeLock !== null && document.visibilityState === 'visible') { await toggleWakeLock(); } });
 
-                            function updateProfileName(newName) {
-                                fetch('/api/profiles/rename', {
-                                    method: 'POST',
-                                    headers: {'Content-Type': 'application/json'},
-                                    body: JSON.stringify({id: currentProfileId, name: newName})
+                            /* --- GRAPHICS --- */
+                            function draw(ctx, canvas, hist, series, maxVal) {
+                                if(!canvas || !ctx) return;
+                            ctx.clearRect(0,0,canvas.width,canvas.height);
+                            ctx.strokeStyle = '#222'; ctx.beginPath();
+                            for(let i=1; i<4; i++){ let y = canvas.height - (canvas.height/4)*i; ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
+                            ctx.stroke();
+                            series.forEach(s => {
+                                ctx.strokeStyle = s.c; ctx.lineWidth = 1.5; ctx.beginPath();
+                                hist.forEach((p,i) => {
+                                    let x=(i/(maxPts-1))*canvas.width; let val = p[s.k] || 0; let y=canvas.height - (val/maxVal)*canvas.height;
+                                    if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
                                     });
+                                ctx.stroke();
+                                });
                                 }
 
-                            function syncUIWithNewProfile(config) {
-                                const effects = config.effects;
+                                /* --- MAIN LOOP --- */
+                                setInterval(async () => {
+                                    if(isFetching) return;
+                                isFetching = true;
+                                try {
+                                    const res = await fetch('/api/telemetry'); const d = await res.json();
+                                    isRunning = d.active;
+                                    // Visuel aktivering/deaktivering af test-knapper
+                                    const tRear = document.getElementById('test_rear_btn');
+                                    const tFront = document.getElementById('test_front_btn');
+                                    const tHint = document.getElementById('test_hint');
+                                    if (tRear && tFront && tHint) {
+                                        if (isRunning) {
+                                            tRear.disabled = true; tFront.disabled = true;
+                                            tRear.style.opacity = "0.4"; tFront.style.opacity = "0.4";
+                                            tHint.style.color = "#f44336"; tHint.innerText = "Test disabled while engine runs";
+                                            } else {
+                                                tRear.disabled = false; tFront.disabled = false;
+                                                tRear.style.opacity = "1"; tFront.style.opacity = "1";
+                                                tHint.style.color = "#666"; tHint.innerText = "Only available when engine is off";
+                                                }
+                                            }
+                                    const btn = document.getElementById('toggleBtn');
+                                    if(btn) { btn.innerText = isRunning ? "STOP ENGINE" : "START ENGINE"; btn.className = isRunning ? "big-btn btn-red" : "big-btn btn-blue"; }
 
-                                // --- Global Settings ---
-                                document.getElementById('master_vol').value = config.master_volume;
-                                document.getElementById('master_vol_disp').innerText = Math.round(config.master_volume * 100) + '%';
-                                document.getElementById('output_headroom').value = config.output_headroom || 0.45;
-                                document.getElementById('headroom_val_disp').innerText = Math.round((config.output_headroom || 0.45) * 100) + '%';
-                                document.getElementById('units').value = config.units;
-
-                                // --- RPM ---
-                                document.getElementById('rpm_enabled').checked = effects.rpm.enabled;
-                                document.getElementById('rpm_vol').value = effects.rpm.volume;
-                                document.getElementById('rpm_val_disp').innerText = Math.round(effects.rpm.volume * 100) + '%';
-                                document.getElementById('rpm_bal').value = effects.rpm.balance;
-                                document.getElementById('rpm_profile').value = effects.rpm.profile;
-                                document.getElementById('rpm_min').value = effects.rpm.min_freq;
-                                document.getElementById('rpm_max').value = effects.rpm.max_freq;
-                                document.getElementById('rpm_pit_boost').value = effects.rpm.pit_boost;
-                                document.getElementById('rpm_pit_boost_val').innerText = Math.round(effects.rpm.pit_boost * 100) + '%';
-
-                                // --- Suspension ---
-                                document.getElementById('susp_enabled').checked = effects.suspension.enabled;
-                                document.getElementById('susp_road_vol').value = effects.suspension.road_volume;
-                                document.getElementById('road_vol_disp').innerText = Math.round(effects.suspension.road_volume * 100) + '%';
-                                document.getElementById('susp_impact_vol').value = effects.suspension.impact_volume;
-                                document.getElementById('impact_vol_disp').innerText = Math.round(effects.suspension.impact_volume * 100) + '%';
-                                document.getElementById('susp_thresh').value = effects.suspension.threshold;
-                                document.getElementById('thresh_val').innerText = effects.suspension.threshold;
-                                document.getElementById('susp_impact_thresh').value = effects.suspension.impact_threshold;
-                                document.getElementById('impact_thresh_val').innerText = effects.suspension.impact_threshold;
-                                document.getElementById('susp_bal').value = effects.suspension.balance;
-                                document.getElementById('susp_priority').checked = effects.suspension.priority;
-
-                                // --- Traction ---
-                                document.getElementById('traction_enabled').checked = effects.traction.enabled;
-                                document.getElementById('traction_vol').value = effects.traction.volume;
-                                document.getElementById('traction_vol_disp').innerText = Math.round(effects.traction.volume * 100) + '%';
-                                document.getElementById('traction_thresh').value = effects.traction.threshold;
-                                document.getElementById('traction_thresh_val').innerText = effects.traction.threshold;
-                                document.getElementById('traction_sens').value = effects.traction.sensitivity;
-                                document.getElementById('traction_sens_val').innerText = effects.traction.sensitivity;
-                                document.getElementById('traction_abs_offset').value = effects.traction.abs_offset || 0.09;
-                                document.getElementById('traction_abs_disp').innerText = effects.traction.abs_offset || 0.09;
-                                document.getElementById('traction_calib').checked = effects.traction.use_autocalib;
-                                document.getElementById('traction_front_freq').value = effects.traction.front_freq;
-                                document.getElementById('traction_front_freq_disp').innerText = effects.traction.front_freq + ' Hz';
-                                document.getElementById('traction_rear_freq').value = effects.traction.rear_freq;
-                                document.getElementById('traction_rear_freq_disp').innerText = effects.traction.rear_freq + ' Hz';
-                                document.getElementById('traction_priority').checked = effects.traction.priority;
-
-                                // --- Gear Shift ---
-                                document.getElementById('gear_enabled').checked = effects.gear_shift.enabled;
-                                document.getElementById('gear_vol').value = effects.gear_shift.volume;
-                                document.getElementById('gear_vol_disp').innerText = Math.round(effects.gear_shift.volume * 100) + '%';
-                                document.getElementById('gear_bal').value = effects.gear_shift.balance;
-
-                                // --- Sim Road ---
-                                document.getElementById('road_sim_enabled').checked = effects.sim_road.enabled;
-                                document.getElementById('road_texture_vol').value = effects.sim_road.texture_volume;
-                                document.getElementById('road_texture_vol_disp').innerText = Math.round(effects.sim_road.texture_volume * 100) + '%';
-                                document.getElementById('road_texture_freq').value = effects.sim_road.texture_freq;
-                                document.getElementById('road_texture_freq_disp').innerText = effects.sim_road.texture_freq + ' Hz';
-                                document.getElementById('road_sim_vol').value = effects.sim_road.volume;
-                                document.getElementById('road_sim_vol_disp').innerText = Math.round(effects.sim_road.volume * 100) + '%';
-                                document.getElementById('road_sim_rough').value = effects.sim_road.roughness;
-                                document.getElementById('road_rough_val').innerText = effects.sim_road.roughness;
-                                // --- Obstacle Impact ---
-                                if (effects.obstacle_impact) {
-                                    // RETTELSE: Tilføjet 'd' i 'obs_enabled'
-                                    document.getElementById('obs_enabled').checked = effects.obstacle_impact.enabled;
-
-                                    // Volumen
-                                    const obsVol = effects.obstacle_impact.volume;
-                                    document.getElementById('obs_vol').value = obsVol;
-                                    document.getElementById('obs_vol_disp').innerText = Math.round(obsVol * 100) + '%';
-
-                                    // Sensitivity (Threshold)
-                                    const obsThresh = effects.obstacle_impact.threshold;
-                                    document.getElementById('obs_thresh').value = obsThresh;
-                                    document.getElementById('obs_thresh_disp').innerText = obsThresh;
-
-                                    // Frequency (Hz)
-                                    const obsFreq = effects.obstacle_impact.freq || 30;
-                                    document.getElementById('obs_freq').value = obsFreq;
-                                    document.getElementById('obs_freq_disp').innerText = obsFreq + ' Hz';
-                                    }
-                                }
-                    /* --- TELEMETRY POLLING LOOP (10Hz) --- */
-                    setInterval(async () => {
-                        try {
-                            const res = await fetch('/api/telemetry'); const d = await res.json();
-
-                            // Global Sync & UI Locking
-                            isRunning = d.active;
-                            const btn = document.getElementById('toggleBtn');
-                            btn.innerText = isRunning ? "STOP ENGINE" : "START ENGINE";
-                            btn.classList.toggle('stop', isRunning);
-                            const tRear = document.getElementById('test_rear_btn'); const tFront = document.getElementById('test_front_btn'); const tHint = document.getElementById('test_hint');
-                            if (isRunning) { tRear.disabled = true; tFront.disabled = true; tRear.style.opacity = "0.4"; tFront.style.opacity = "0.4"; tHint.style.color = "#f44336"; }
-                            else { tRear.disabled = false; tFront.disabled = false; tRear.style.opacity = "1"; tFront.style.opacity = "1"; tHint.style.color = "#666"; }
-
-                            if(d.active) {
-                                // Hvis motoren kører, tjekker vi om der rent faktisk kommer data (is_live)
-                                if (d.is_live) {
-                                    statusIndicator.innerText = "Online (Live)";
-                                    statusIndicator.className = "status-box valid"; // GRØN
-                                    } else {
-                                        statusIndicator.innerText = "Standby (No Data)";
-                                        statusIndicator.className = "status-box warning"; // ORANGE/GUL
+                                    if(statusIndicator) {
+                                        if(d.active) { statusIndicator.innerText = d.is_live ? "ONLINE" : "STANDBY (No Data)"; statusIndicator.style.color = d.is_live ? "#00e676" : "#ffab00"; }
+                                        else { statusIndicator.innerText = "OFFLINE"; statusIndicator.style.color = "#9e9e9e"; }
                                         }
 
-                                // Units & Conversions
-                                let speed = d.speed; let unitText = "km/h"; let tUnit = "°C";
-                                if (d.units === "imperial") { speed = speed * 0.621371; unitText = "mph"; tUnit = "°F"; }
+                                    if(d.active) {
+                                        let speed = d.speed; let unitText = "km/h"; let tUnit = "°C";
+                                        const currentUnit = document.getElementById('units') ? document.getElementById('units').value : "metric";
+                                        if (currentUnit === "imperial") { speed = speed * 0.621371; unitText = "mph"; tUnit = "°F"; }
 
-                                // --- UPDATE RACE DASH (Page 1) ---
-                                const raceRpmBar = document.getElementById('race_rpm_bar');
-                                document.getElementById('race_rpm_val').innerText = Math.round(d.rpm);
-                                document.getElementById('race_gear_disp').innerText = d.gear==0?"R":d.gear||"N";
-                                document.getElementById('race_speed_disp').innerText = Math.round(speed);
-                                document.getElementById('race_speed_unit').innerText = unitText;
-                                document.getElementById('race_pos_disp').innerText = d.position || "-";
-                                document.getElementById('race_last_lap').innerText = d.last_lap || "--:--.---";
-                                document.getElementById('race_best_lap').innerText = d.best_lap || "--:--.---";
+                                        const gear = d.gear==0?"R":d.gear||"N"; const speedRounded = Math.round(speed);
+                                        const curLapStr = (d.current_lap && d.current_lap > 0) ? d.current_lap : "-";
 
-                                // Shift Light Logic for Race Dash
-                                if (d.rev_limiter) {
-                                    raceRpmBar.className = "rpm-race-bar limit"; // Blinking Red
-                                    } else if (d.shift_indicator) {
-                                        raceRpmBar.className = "rpm-race-bar shift"; // Solid Green
-                                        } else {
-                                            raceRpmBar.className = "rpm-race-bar"; // Normal styling
-                                            }
+                                        const speedEl = document.getElementById('race-speed'); if(speedEl) speedEl.innerText = speedRounded;
+                                        const teleSpeedEl = document.getElementById('tele-speed'); if(teleSpeedEl) teleSpeedEl.innerText = speedRounded;
 
-                                        // --- UPDATE MAIN DASH (Page 2) ---
-                                        document.getElementById('gear_disp').innerText = d.gear==0?"R":d.gear||"N";
-                                        document.getElementById('speed_disp').innerText = Math.round(speed);
-                                        document.getElementById('speed_unit').innerText = unitText;
+                                        const speedUnit1 = document.getElementById('race-speed-unit'); if(speedUnit1) speedUnit1.innerText = unitText;
+                                        const speedUnit2 = document.getElementById('tele-speed-unit'); if(speedUnit2) speedUnit2.innerText = unitText;
 
-                                        const mainRpmBar = document.getElementById('rpm_bar');
-                                        mainRpmBar.style.width = (d.rpm/d.max_rpm*100)+"%";
-                                        // Main Dash RPM bar color sync
-                                        if (d.rev_limiter) mainRpmBar.style.background = "var(--brake)";
-                                        else if (d.shift_indicator) mainRpmBar.style.background = "var(--shift)";
-                                        else mainRpmBar.style.background = "var(--accent)";
+                                        document.getElementById('race-gear').innerText = gear; document.getElementById('gear_disp').innerText = gear;
+                                        const curLap1 = document.getElementById('race_current_lap'); if(curLap1) curLap1.innerText = curLapStr;
+                                        const curLap2 = document.getElementById('tele_current_lap'); if(curLap2) curLap2.innerText = curLapStr;
 
-                                        document.getElementById('rpm_val').innerText = Math.round(d.rpm)+" RPM";
+                                        const lastLap = document.getElementById('race_last_lap'); if(lastLap) lastLap.innerText = d.last_lap || "--:--.---";
+                                        const bestLap1 = document.getElementById('race_best_lap'); if(bestLap1) bestLap1.innerText = d.best_lap || "--:--.---";
+                                        const bestLap2 = document.getElementById('tele_best_lap'); if(bestLap2) bestLap2.innerText = d.best_lap || "--:--.---";
 
-                                        // Update Tires (Both Dashboards)
                                         if(d.tires) {
-                                            ['FL', 'FR', 'RL', 'RR'].forEach((id, i) => {
-                                                const tire = d.tires[i];
-                                                let tempVal = tire.temp;
-                                                if (d.units === "imperial" && tempVal > 0) tempVal = (tempVal * 1.8) + 32;
-                                                const tempStr = tempVal > 0 ? Math.round(tempVal) + tUnit : "--";
+                                            const baseT = parseFloat(document.getElementById('tt_base').value);
+                                            const spreadT = parseFloat(document.getElementById('tt_spread').value);
+                                            const halfSpread = spreadT / 2.0; const optLow = baseT - halfSpread; const optHigh = baseT + halfSpread;
 
-                                                // Update Main Dash
-                                                document.getElementById(`temp_${id}`).innerText = tempStr;
-                                                document.getElementById(`temp_${id}`).style.color = tire.temp_color;
+                                            ['FL','FR','RL','RR'].forEach((id,i) => {
+                                                // 1. Skudsikker udtrækning: Prøv både 'FL' navnet og 0,1,2,3 indekset
+                                                let tempVal = d.tires[id] !== undefined ? d.tires[id] : d.tires[i];
 
-                                                // Update Race Dash
-                                                document.getElementById(`race_temp_${id}`).innerText = tempStr;
-                                                document.getElementById(`race_temp_${id}`).style.color = tire.temp_color;
-                                                });
-                                            }
-
-                                            // Update Graphs & Traction (Main Dash)
-                                            tuneHist.push({
-                                            r: d.analysis.road || 0,
-                                            i: d.analysis.impact || 0,
-                                            t: (d.traction_triggers.front + d.traction_triggers.rear) / 2 || 0, // yellow
-                                            s: d.analysis.sim_road || 0     // purple
-                                            });
-                                            if(tuneHist.length > maxPts) tuneHist.shift();
-                                            draw(tuneCtx, tuneCanvas, tuneHist, [
-                                                {k: 'r', c: '#f44336'}, // Road (Rød)
-                                                {k: 'i', c: '#007acc'}, // Impact (Blå)
-                                                {k: 't', c: '#ffeb3b'}, // Traction (Gul)
-                                                {k: 's', c: '#9c27b0'}  // SimRoad (Lilla)
-                                                ], 2.0);
-                                            pedalHist.push({g:d.throttle || 0, b:d.brake || 0});
-                                            if(pedalHist.length>maxPts)pedalHist.shift();
-                                            draw(pedalCtx, pedalCanvas, pedalHist, [
-                                                {k: 'g', c: '#4caf50'}, // Throttle (Grøn)
-                                                {k: 'b', c: '#f44336'}  // Brake (Rød)
-                                                ], 100.0);
-                                            } else {
-                                                statusIndicator.innerText = isRunning ? "No Data" : "Offline"; statusIndicator.className = "status-box invalid";
+                                                // 2. Hvis Python har pakket det ind i et {temp: 60} objekt, trækker vi tallet ud
+                                                if (tempVal && typeof tempVal === 'object' && tempVal.temp !== undefined) {
+                                                    tempVal = tempVal.temp;
                                                 }
-                                            } catch(e){}
-                                            }, 100);
 
-                                            //* --- STARTUP LOGIC: Husker sidste side --- */
-                                            window.addEventListener('load', () => {
-                                                const scroller = document.getElementById('scroller');
-                                                const width = window.innerWidth;
-                                                // Henter gemt side fra localStorage, eller bruger Side 2 som standard
-                                                const lastPage = localStorage.getItem('lastGTPage') || 2;
+                                                // 3. Fallback: Hvis der slet intet data er, sættes den til 0 i stedet for at crashe med NaN
+                                                tempVal = Number(tempVal);
+                                                if (isNaN(tempVal)) tempVal = 0;
 
-                                                scroller.scrollTo({
-                                                    left: (lastPage - 1) * width,
-                                                    behavior: 'auto' // 'auto' gør at den hopper direkte til siden uden animation
-                                                        });
+                                                // 4. Sæt farver
+                                                let boxColor = "#4caf50";
+                                                if (tempVal < optLow) boxColor = "#007acc";
+                                                else if (tempVal > optHigh) boxColor = "#f44336";
+
+                                                // 5. Omregn til Fahrenheit hvis valgt
+                                                if (currentUnit === "imperial") tempVal = (tempVal * 1.8) + 32;
+
+                                                // 6. Opdater UI
+                                                const tempStr = Math.round(tempVal) + tUnit;
+                                                const raceEl = document.getElementById('race_temp_'+id);
+                                                if(raceEl) { raceEl.innerText = tempStr; raceEl.parentElement.style.backgroundColor = boxColor; }
+
+                                                const mainEl = document.getElementById('temp_'+id);
+                                                if(mainEl) { mainEl.innerText = tempStr; mainEl.parentElement.style.backgroundColor = boxColor; }
+                                            });
+                                        }
+                                            const rpmBars = document.querySelectorAll('.top-rpm-bar');
+                                            const maxRpm = (d.max_rpm && d.max_rpm > 1000) ? d.max_rpm : 8000;
+                                            const pct = d.rpm / maxRpm; const activeLeds = Math.floor(pct * 20); const isShift = pct > 0.95;
+                                            const blinkOn = Math.floor(Date.now() / 66) % 2 === 0;
+
+                                            rpmBars.forEach(bar => {
+                                                const segs = bar.querySelectorAll('.rpm-seg');
+                                                for(let i=0; i<segs.length; i++) {
+                                                    let className = "rpm-seg inactive";
+                                                    if (isShift) className = blinkOn ? "rpm-seg shift-blue" : "rpm-seg shift-red";
+                                                    else if (i < activeLeds) { if (i < 8) className = "rpm-seg green"; else if (i < 14) className = "rpm-seg yellow"; else className = "rpm-seg red"; }
+                                                    segs[i].className = className;
+                                                    }
                                                 });
 
-                                                /* --- SWIPE NAVIGATION LOGIC: Opdaterer dots og gemmer side --- */
-                                                document.getElementById('scroller').addEventListener('scroll', () => {
-                                                    const scrollLeft = document.getElementById('scroller').scrollLeft;
-                                                    const width = window.innerWidth;
-                                                    let page = 1;
+                                                const tractionVal = (d.traction_triggers) ? ((d.traction_triggers.front + d.traction_triggers.rear) * 50) : 0;
+                                                pedalHist.push({g:d.throttle || 0, b:d.brake || 0, t: tractionVal});
+                                                if(pedalHist.length > maxPts) pedalHist.shift();
+                                                draw(dash2Ctx, dash2Canvas, pedalHist, [{k:'g',c:'#4caf50'},{k:'b',c:'#f44336'},{k:'t',c:'#ffeb3b'}], 100.0);
 
-                                                    // Beregner hvilken side vi er på baseret på scroll-position
-                                                    if (scrollLeft > width * 1.5) page = 3;
-                                                    else if (scrollLeft > width * 0.5) page = 2;
+                                                const raceFuel = document.getElementById('race_fuel_val'); if(raceFuel) raceFuel.innerText = d.fuel_liter + " L";
+                                                const racePct = document.getElementById('race_fuel_pct'); if(racePct) racePct.innerText = d.fuel_pct + "%";
+                                                const teleFuel = document.getElementById('tele_fuel_val'); if(teleFuel) teleFuel.innerText = d.fuel_liter + " L";
 
-                                                    // Opdaterer de visuelle prikker (dots) i bunden
-                                                    document.getElementById('dot1').classList.toggle('active', page === 1);
-                                                    document.getElementById('dot2').classList.toggle('active', page === 2);
-                                                    document.getElementById('dot3').classList.toggle('active', page === 3);
+                                                const raceLaps = document.getElementById('race_laps_rem'); const teleLaps = document.getElementById('tele_laps_rem'); const lapsBox = document.getElementById('laps_rem_box');
+                                                if(raceLaps || teleLaps) {
+                                                    if(raceLaps) raceLaps.innerText = d.laps_rem;
+                                                    if(teleLaps) teleLaps.innerText = d.laps_rem;
+                                                    const lapsNum = parseFloat(d.laps_rem);
+                                                    if (!isNaN(lapsNum) && lapsNum < 1.0 && lapsNum > 0.0) { if(lapsBox) lapsBox.classList.add('flash-alert'); if(teleLaps) teleLaps.style.color = "#d32f2f"; }
+                                                    else { if(lapsBox) lapsBox.classList.remove('flash-alert'); if(teleLaps) teleLaps.style.color = "#ff9800"; }
+                                                    }
 
-                                                    // Gemmer den nuværende side i browserens hukommelse
-                                                    localStorage.setItem('lastGTPage', page);
+                                                const arrow = document.getElementById('trend_arrow');
+                                                if (arrow) {
+                                                    if (d.lap_trend === 1) { arrow.style.display = "block"; arrow.innerText = "⬇"; arrow.style.color = "#00e676"; }
+                                                    else if (d.lap_trend === 2) { arrow.style.display = "block"; arrow.innerText = "⬆"; arrow.style.color = "#d32f2f"; }
+                                                    else { arrow.style.display = "none"; }
+                                                    }
+                                                }
+                                                } catch(e) {} finally { isFetching = false; }
+                                                }, 100);
+
+                                                /* --- STARTUP --- */
+                                                window.addEventListener('load', () => {
+                                                    updateTireUI();
+
+                                                    // 1. Vis først en bestemt tab for at nulstille display
+                                                    openTab('general');
+
+                                                    // 2. Naviger til den sidste gemte skærm
+                                                    const lastPage = localStorage.getItem('lastGTPage') || 2;
+                                                    if(lastPage == 1) goToScreen('dashboard1');
+                                                    else if(lastPage == 2) goToScreen('settings-screen');
+                                                    else if(lastPage == 3) goToScreen('dashboard2');
+                                                    else goToScreen('home-screen');
+
+                                                    const savedIp = "{{ config.ps5_ip }}";
+                                                    if(savedIp && document.getElementById('ps5_ip')) document.getElementById('ps5_ip').value = savedIp;
                                                     });
                                                 </script>
                                                 </body>
-                                            </html>
+                                                </html>

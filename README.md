@@ -1,4 +1,4 @@
-# GT7 Shaker for Linux 1.31
+# GT7 Shaker for Linux 1.4
 GT7 Shaker for Linux is a Python-based telemetry-to-audio converter specifically designed for Gran Turismo 7. It captures real-time physics data from your PS5 or PS4 over the network and translates it into haptic feedback for Bass Shakers using a standard soundcard or hardware like NobSound amplifiers with builtin soundcar functionality
 
 Project is still under development and bugs is to be expected. 
@@ -22,9 +22,9 @@ Cross-Platform Web UI: A responsive Flask-based interface that works seamlessly 
 
 Profile Persistence: Save and name up to 4 individual tuning profiles directly to config.json for different car classes or racing styles.
 
-![Dashboard Interface](src/gt_shaker/assets/Connectionpage.png)
+![Dashboard Interface](src/gt_shaker/assets/welcome.png)
 
-![Dashboard Interface](src/gt_shaker/assets/RaceDash.png)
+![Dashboard Interface](src/gt_shaker/assets/RaceDash_1.png)
 
 ## 🛠 Prerequisites
 Hardware
@@ -41,7 +41,7 @@ Soundcard connected to an amplifier and haptic transducers (e.g., Buttkicker, Da
 ### Recommended: Install via pipx
 The easiest way to install and run GT7 Shaker as a standalone application:
     ```bash
-    pipx install https://github.com/Helskov/GT7-Shaker-for-linux/releases/download/1.31/gt7_shaker-1.31-py3-none-any.whl
+    pipx install https://github.com/Helskov/GT7-Shaker-for-linux/releases/download/1.4/gt7_shaker-1.4-py3-none-any.whl
     
 After installation, simply run gt-shaker from anywhere in your terminal.
 
@@ -79,33 +79,32 @@ Connect to GT7: Enter your PS5 IP Address in the connection card and click START
 ## ⚙️ Interface & Configuration
 ## 📱 Web Interface & Functionality
 
-The web interface is designed for ease of use and is divided into two main pages. You can navigate between them by **swiping** on mobile devices or **clicking the navigation dots**.
+The web interface is designed for ease of use and is divided into a welcome screen with to shortcuts to dashboards, which one of them are with graphs for brake, throttle and Slip**.
 ---
 
-### 🏎️ Page 1: Race Dashboard
+### 🏎️ Race Dashboard
 *Optimized for focus on essential race data.*
 
-* **High-Visibility Telemetry**: Large, clear displays for **RPM**, **Current Gear**, and **Speed (KM/H)** for instant recognition during high-speed maneuvers.
-* **Race Position & Timing**: Real-time tracking of your **Current Position (POS)** and precise lap timing, including **Last Lap** and **Best Lap** performance metrics.
-* **Live Tire Temperatures**: Individual temperature readouts for all four tires (**FL, FR, RL, RR**) to monitor grip levels and thermal degradation in real-time.
-* **On-the-Fly Profile Selection**: Quick-access buttons for **4 Preset Profiles (P1-P4)**, allowing you to switch between custom tuning setups (e.g., "Formel") instantly without leaving the dashboard. Or you can have a profile with not effects activated, if you only want Racedashboard. 
+![Race Dashboard Screenshot](racedash.png)
+
+* **High-Visibility Telemetry**: Large, clear displays for the **RPM bar**, **Current Gear**, and **Speed** (KM/H or MPH) for instant recognition during high-speed maneuvers.
+* **Lap Timing & Fuel Management**: Real-time tracking of your **Current Lap** and precise lap timing, including **Last Lap** (with a visual pace trend arrow) and **Best Lap** performance metrics. The bottom panel keeps you updated on crucial endurance stats: **Fuel Level**, **Tank %**, and **Laps Remaining**.
+* **Live Tire Temperatures**: Dynamic, color-coded temperature readouts for all four tires (**FL, FR, RL, RR**) allowing you to monitor grip levels and thermal degradation in real-time.
+* **Flexible Usage**: You can use the dashboard seamlessly alongside your active tactile feedback. Alternatively, you can easily switch to a profile with all effects deactivated if you prefer to use the screen purely as a visual racing dashboard without any shaker feedback.
 
 ---
 
-### 📊 Page 2: Live Telemetry & Monitoring
-*Focuses on real-time data visualization while driving for optimizations.*
+### 📊 Telemetry Dashboard
+*Focuses on real-time data visualization and input analysis while driving.*
 
-* **Engine Control**: Features a dedicated **Start/Stop Engine** button to manually toggle the haptic processing engine.
-* **Connection Status**: Includes an **Online (Live)** status indicator that confirms the system is successfully receiving telemetry data from the console.
-* **Integrated Help**: A dedicated **Help** button provides immediate access to the manual and setup guides directly from the dashboard.
-* **Technical Readouts**: Detailed real-time data for **Gear**, **Speed**, and precise **Tire Temperatures**.
-* **Real-time Gauges**: Visual display of **RPM**, **Speed**, **Gear**, and **Pedal** (Throttle/Brake) inputs.
-* **Tire Status**: Monitoring of tire temperatures with color-coded alerts for optimal grip management.
-* **Pedal Telemetry**: A live bar and graph showing **Throttle (Green)** and **Brake (Red)** input levels.
-* **Shaker Signal Analysis**: A multi-channel graph analyzing the live intensity of **Road**, **Impact**, **Traction**, and **Sim-Road** haptic signals.
----
+![Telemetry Dashboard](Racedash_1.png)
 
-### ⚙️ Page 3: Advanced Shaker Tuning
+* **Live Input Graph**: A real-time scrolling chart analyzing your exact pedal inputs, featuring **Gas (Green)**, **Brake (Red)**, and **ABS/TC (Yellow)** trigger activity. Perfect for analyzing braking points, throttle control, and traction loss.
+* **Essential Telemetry**: Clear, central readouts for **Current Gear**, the **RPM bar**, and **Speed**, allowing you to monitor core car behavior while analyzing the telemetry graph.
+* **Lap & Fuel Tracking**: Keep a close eye on your stint with quick-glance data for **Current Lap**, **Best Lap**, **Fuel Remaining**, and dynamically calculated **Laps Left**.
+* **Tire Temperature Dynamics**: Bold, color-coded tire temperature monitoring (**FL, FR, RL, RR**) to help you quickly identify cold (blue), optimal (green), or overheating (red) tires while tuning your driving style.
+
+### ⚙️ Settings: Advanced Shaker Tuning
 *This page allows you to customize the physical feel of the haptic feedback in real-time.*
 
 #### 🛠️ General Settings
@@ -141,6 +140,14 @@ The web interface is designed for ease of use and is divided into two main pages
 🏗️ Colliosion impact effect
 * Haptic collision effect: Feel when you hit someone or something. 
 * Sensitivity: Slider to adjust Sensitivity of the G-forces
+
+### 🌡️ Tire Temp Config
+* **Visual Tire Monitoring:** Configure the color-coded tire temperature display (Cold/Optimal/Hot) shown on the dashboards.
+* **Base Temp (Ideal Middle):** Slider to set the perfect operating temperature for your current tire compound.
+* **Window Spread:** Slider to define how wide your optimal (green) temperature zone is, before the tires are considered too cold (blue) or overheating (red).
+
+![Tire Temp Config](tiretemp.png)
+
 ---
 
 <table>
@@ -157,13 +164,8 @@ The web interface is designed for ease of use and is divided into two main pages
 ## 🗺️ Roadmap & Future Plans
 The project is under active development. Below are the planned features and current "to-do" items:
 
-* More stability to the engine. See outstanding. 
-
-* Cleanup and see if i can make the code more effective. 
 
 * Maybe and just maybe support for motion. The integration should not be hard. But i have nothing to test with. 
-
-* Landscape Mode Optimization: Specific CSS layouts for horizontal viewing on mounted devices.
 
 * Multi-Channel Support: Expand from 2-channel stereo to 4.0 or 5.1 surround sound for 4-corner setups.
 
@@ -179,6 +181,17 @@ But hard to make work properly because lack of steering input in GT7 telemetry.
 * Support for Wind simulator
 
 ## Changes
+
+### v1.4
+
+* **New Unified UI**: Complete interface redesign to ensure a seamless, native experience on both mobile (Android/iOS) and desktop.
+* **Dual Dashboard System**: Introduced two specialized view modes:
+    * **Race Dashboard**: Focused on pure, high-glance race data.
+    * **Telemetry Dashboard**: Features real-time scrolling graphs for Brake, Throttle, and Tire Slip analysis.
+    * **Smart Fuel Management**: Integrated live calculation of **Laps Remaining**. Features a high-visibility flash alert when less than 1.0 lap of fuel is left.
+    * **Pace Trend Indicator**: Real-time visual feedback using **Red/Green arrows** to indicate if your current lap pace is better or worse than the previous lap.
+    * **Dynamic Tire Calibration**: You can now define custom "Optimal Windows" for tire temperatures directly in the new **Tire Temp** settings tab.
+    * **One-Click Reset**: Added a **Reset to Defaults** button in the General tab to instantly restore all system and profile settings.
 
 ### v1.31
 * **New Collision effect when hitting object like walls and other cars and etc. 
@@ -240,22 +253,27 @@ But hard to make work properly because lack of steering input in GT7 telemetry.
 To run the application correctly, the files must be organized as follows:
 ```
 .
-├── .gitignore # Files to be ignored by Git
-├── LICENSE # Project license
-├── pyproject.toml # Build configuration for the Python package
-├── README.md # Documentation and instructions
-├── requirements.txt # List of required libraries
-└── src/ # Source code directory
-    ├── config.json # User settings (auto-generated)
-    └── gt_shaker/ # The main program package
-        ├── __init__.py # Marks the directory as a package
-        ├── audio_processor.py # Audio logic and effects
-        ├── main.py # Main engine and audio stream
-        ├── network_manager.py # PS5 network communication
-        ├── Simulated_Road.py # Road simulation
-        ├── tire_processor.py # Tire and traction logic
-        ├── web_app.py # Flask web server and dashboard
-        ├── assets/ # Images for UI and README
-        └── templates/ # HTML files for the dashboard
-            ├── index.html
-            └── manual.html
+├── .gitignore              # Files to be ignored by Git
+├── LICENSE                 # Project license
+├── pyproject.toml          # Build configuration for the Python package
+├── README.md               # Documentation and instructions
+├── requirements.txt        # List of required libraries
+└── src/                    # Source code directory
+    ├── config.json         # User settings (auto-generated)
+    └── gt_shaker/          # The main program package
+        ├── __init__.py          # Marks the directory as a package
+        ├── audio_processor.py   # Audio logic and effects
+        ├── main.py              # Main engine and audio stream
+        ├── network_manager.py   # PS5 network communication
+        ├── Simulated_Road.py    # Road simulation
+        ├── tire_processor.py    # Tire and traction logic
+        ├── web_app.py           # Flask web server and dashboard
+        ├── assets/              # General project assets
+        ├── images/              # UI images
+        │   └── background.png
+        └── templates/           # Web interface files
+            ├── index.html       # Main UI and dashboards
+            ├── manual.html      # Help and documentation page
+            ├── icon.png         # Web app icon (Hermit / iOS)
+            └── fonts/           # Digital fonts for Race dashboards
+                └── digital.ttf

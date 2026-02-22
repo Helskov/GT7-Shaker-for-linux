@@ -1,4 +1,4 @@
-# GT7 Shaker for Linux 1.31
+# GT7 Shaker for Linux 1.4
 # Copyright (C) 2026 Soeren Helskov
 # https://github.com/Helskov/GT7-Shaker-for-linux
 #
@@ -14,8 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-
 import numpy as np
 import time
 
