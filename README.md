@@ -174,7 +174,7 @@ But hard to make work properly because lack of steering input in GT7 telemetry.
 
 ### v1.4
 
-* **New Unified UI**: Complete interface redesign to ensure a seamless, native experience on both mobile (Android/iOS) and desktop.
+* **New Unified UI**: Complete interface redesign modeled after the [GT7 Shaker for Android](https://github.com/Helskov/GT7-Shaker-for-Android) app to ensure a seamless, native experience across Linux, Android, and Desktop.
 * **Dual Dashboard System**: Introduced two specialized view modes:
     * **Race Dashboard**: Focused on pure, high-glance race data.
     * **Telemetry Dashboard**: Features real-time scrolling graphs for Brake, Throttle, and Tire Slip analysis.
@@ -182,7 +182,7 @@ But hard to make work properly because lack of steering input in GT7 telemetry.
     * **Pace Trend Indicator**: Real-time visual feedback using **Red/Green arrows** to indicate if your current lap pace is better or worse than the previous lap.
     * **Dynamic Tire Calibration**: You can now define custom "Optimal Windows" for tire temperatures directly in the new **Tire Temp** settings tab.
     * **One-Click Reset**: Added a **Reset to Defaults** button in the General tab to instantly restore all system and profile settings.
-
+    
 ### v1.31
 * **New Collision effect when hitting object like walls and other cars and etc. 
 * **New refined ABS lockup detection with slider for Adjustable slip percentage of the tires
